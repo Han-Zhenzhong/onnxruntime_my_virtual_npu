@@ -4,8 +4,7 @@
 #include "core/graph/constants.h"
 #include "core/graph/onnx_protobuf.h"
 
-namespace onnxruntime {
-namespace contrib {
+namespace ONNX_NAMESPACE {
 
 ONNX_OPERATOR_SET_SCHEMA_EX(
     FastGelu,
@@ -25,6 +24,11 @@ ONNX_OPERATOR_SET_SCHEMA_EX(
             [](const FunctionBodyBuildContext& ctx, const OpSchema& schema, FunctionProto& functionProto) {
               return true;
             }));
+
+}  // namespace ONNX_NAMESPACE
+
+namespace onnxruntime {
+namespace contrib {
 
 void RegisterMyVirtualNpuSchemas() {
   // Register domain version range
