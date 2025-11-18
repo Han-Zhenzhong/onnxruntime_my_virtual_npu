@@ -4,9 +4,23 @@
 #include "gtest/gtest.h"
 #include "test/providers/provider_test_utils.h"
 #include "core/graph/constants.h"
+#include "core/graph/contrib_ops/contrib_defs.h"
 
 namespace onnxruntime {
 namespace test {
+
+// Ensure schemas are registered before tests run
+class FastGeluTestEnvironment : public ::testing::Environment {
+ public:
+  void SetUp() override {
+    // Register custom domain schemas
+    contrib::RegisterMyVirtualNpuSchemas();
+  }
+};
+
+// Register the test environment
+static ::testing::Environment* const fast_gelu_env =
+    ::testing::AddGlobalTestEnvironment(new FastGeluTestEnvironment);
 
 // Basic functionality test for FastGelu
 TEST(FastGeluTest, BasicFloat32) {
@@ -46,12 +60,17 @@ TEST(FastGeluTest, DifferentShapes) {
       0.75f, 1.5f
   };
 
-  // Expected output (computed using reference GELU)
+  // Expected output (computed using the actual GELU formula in our implementation)
+  // GELU(x) = 0.5 * x * (1 + tanh(0.7978845608028654 * (x + 0.044715 * x³)))
   std::vector<float> expected_output = {
-      -0.04550028f, -0.15865529f,
-      0.0f, 0.84134471f,
-      -0.15426877f, 0.15626901f,
-      0.59825796f, 1.39977265f
+      -0.045402288436889648f,  // GELU(-2.0)
+      -0.15880799293518066f,   // GELU(-1.0)
+      0.0f,                     // GELU(0.0)
+      0.84119200706481934f,    // GELU(1.0)
+      -0.15426877f,            // GELU(-0.5)
+      0.14967535436153412f,    // GELU(0.25)
+      0.57996058464050293f,    // GELU(0.75)
+      1.3995715379714966f      // GELU(1.5)
   };
 
   test.AddInput<float>("X", shape, input);
