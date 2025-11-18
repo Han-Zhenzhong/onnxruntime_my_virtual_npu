@@ -11,7 +11,8 @@ namespace my_cpu {
 Status RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
   static const BuildKernelCreateInfoFn function_table[] = {
       // FastGelu operator (using non-TYPED macro version)
-      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+      // Class is defined in onnxruntime namespace by ONNX_OPERATOR_KERNEL_EX macro
+      ::onnxruntime::BuildKernelCreateInfo<::onnxruntime::ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kCpuExecutionProvider, kMSDomain, 1, FastGelu)>,
 
       // TODO-OPTIMIZE: [Fusion] Add fused operators for better performance
