@@ -4,9 +4,20 @@
 #include "gtest/gtest.h"
 #include "test/providers/provider_test_utils.h"
 #include "core/graph/constants.h"
+#include "core/graph/contrib_ops/contrib_defs.h"
 
 namespace onnxruntime {
 namespace test {
+
+// Static initialization to ensure schemas are registered before tests run
+namespace {
+struct SchemaRegistrar {
+  SchemaRegistrar() {
+    onnxruntime::contrib::RegisterMyVirtualNpuSchemas();
+  }
+};
+static SchemaRegistrar schema_registrar_instance;
+}  // namespace
 
 // Basic functionality test for FastGelu
 TEST(FastGeluTest, BasicFloat32) {
