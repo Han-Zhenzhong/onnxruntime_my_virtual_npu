@@ -10,14 +10,13 @@ namespace onnxruntime {
 namespace my_cpu {
 
 /**
- * FastGELU operator - Basic CPU implementation
+ * FastGELU operator - Basic CPU implementation for float
  *
  * Computes: GELU(x) ≈ 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x³)))
  *
  * This is a basic scalar implementation focused on correctness.
  * Optimization opportunities are marked with TODO-OPTIMIZE comments.
  */
-template <typename T>
 class FastGelu final : public OpKernel {
  public:
   FastGelu(const OpKernelInfo& info) : OpKernel(info) {}
@@ -26,17 +25,17 @@ class FastGelu final : public OpKernel {
 
  private:
   // Basic scalar implementation
-  void ComputeGeluScalar(const T* input, T* output, size_t count) const;
+  void ComputeGeluScalar(const float* input, float* output, size_t count) const;
 
   // Helper function for single value
-  inline T ComputeGeluValue(T x) const;
+  inline float ComputeGeluValue(float x) const;
 
   // TODO-OPTIMIZE: [SIMD] AVX2 vectorized implementation
   // Expected speedup: 4-8x for float32
-  // void ComputeGeluAVX2(const T* input, T* output, size_t count) const;
+  // void ComputeGeluAVX2(const float* input, float* output, size_t count) const;
 
   // TODO-OPTIMIZE: [SIMD] SSE implementation for older CPUs
-  // void ComputeGeluSSE(const T* input, T* output, size_t count) const;
+  // void ComputeGeluSSE(const float* input, float* output, size_t count) const;
 };
 
 }  // namespace my_cpu
