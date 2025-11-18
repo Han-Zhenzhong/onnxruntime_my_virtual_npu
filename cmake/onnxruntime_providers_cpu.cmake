@@ -17,8 +17,8 @@ file(GLOB_RECURSE onnxruntime_cpu_contrib_ops_srcs CONFIGURE_DEPENDS
 
 # Custom my_cpu operators
 file(GLOB_RECURSE onnxruntime_my_cpu_ops_srcs CONFIGURE_DEPENDS
-  "${ONNXRUNTIME_ROOT}/my_cpu/*.h"
-  "${ONNXRUNTIME_ROOT}/my_cpu/*.cc"
+  "${ONNXRUNTIME_ROOT}/core/providers/my_cpu/*.h"
+  "${ONNXRUNTIME_ROOT}/core/providers/my_cpu/*.cc"
 )
 
 file(GLOB_RECURSE onnxruntime_cuda_contrib_ops_cc_srcs CONFIGURE_DEPENDS

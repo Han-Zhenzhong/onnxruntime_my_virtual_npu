@@ -15,7 +15,7 @@
 #endif
 
 // Custom my_cpu operators
-#include "my_cpu/my_cpu_kernels.h"
+#include "core/providers/my_cpu/my_cpu_kernels.h"
 
 #if defined(ENABLE_TRAINING_OPS)
 #include "orttraining/training_ops/cpu/cpu_training_kernels.h"
