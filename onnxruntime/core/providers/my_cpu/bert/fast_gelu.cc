@@ -24,24 +24,10 @@ Status FastGelu::Compute(OpKernelContext* context) const {
   Tensor* output = context->Output(0, input_shape);
   float* output_data = output->MutableData<float>();
 
-  // 3. Optional bias input (for BiasGelu fusion - future optimization)
-  const Tensor* bias_tensor = context->Input<Tensor>(1);
-  const float* bias_data = bias_tensor ? bias_tensor->Data<float>() : nullptr;
-
-  // 4. Compute GELU
+  // 3. Compute GELU (no bias for simple FastGelu)
   // TODO-OPTIMIZE: [Parallel] Use OpenMP for large tensors (count > 1024)
   // #pragma omp parallel for if(count > 1024)
-  if (bias_data) {
-    // BiasGelu: GELU(x + bias)
-    const size_t bias_size = static_cast<size_t>(bias_tensor->Shape().Size());
-    for (size_t i = 0; i < count; ++i) {
-      float x = input_data[i] + bias_data[i % bias_size];
-      output_data[i] = ComputeGeluValue(x);
-    }
-  } else {
-    // Standard GELU
-    ComputeGeluScalar(input_data, output_data, count);
-  }
+  ComputeGeluScalar(input_data, output_data, count);
 
   return Status::OK();
 }
