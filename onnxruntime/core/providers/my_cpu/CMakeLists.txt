@@ -5,15 +5,15 @@
 # This is a standalone implementation independent of contrib_ops
 
 set(onnxruntime_my_cpu_srcs
-  ${ONNXRUNTIME_ROOT}/my_cpu/bert/fast_gelu.cc
-  ${ONNXRUNTIME_ROOT}/my_cpu/bert/fast_gelu.h
-  ${ONNXRUNTIME_ROOT}/my_cpu/my_cpu_kernels.cc
-  ${ONNXRUNTIME_ROOT}/my_cpu/my_cpu_kernels.h
+  ${ONNXRUNTIME_ROOT}/core/providers/my_cpu/bert/fast_gelu.cc
+  ${ONNXRUNTIME_ROOT}/core/providers/my_cpu/bert/fast_gelu.h
+  ${ONNXRUNTIME_ROOT}/core/providers/my_cpu/my_cpu_kernels.cc
+  ${ONNXRUNTIME_ROOT}/core/providers/my_cpu/my_cpu_kernels.h
 )
 
 # TODO: Add more source files as implemented
-# ${ONNXRUNTIME_ROOT}/my_cpu/bert/skip_layer_norm.cc
-# ${ONNXRUNTIME_ROOT}/my_cpu/bert/skip_layer_norm.h
+# ${ONNXRUNTIME_ROOT}/core/providers/my_cpu/bert/skip_layer_norm.cc
+# ${ONNXRUNTIME_ROOT}/core/providers/my_cpu/bert/skip_layer_norm.h
 
 # Create static library for custom CPU operators
 add_library(onnxruntime_my_cpu STATIC ${onnxruntime_my_cpu_srcs})

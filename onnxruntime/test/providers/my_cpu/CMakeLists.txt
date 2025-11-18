@@ -4,11 +4,11 @@
 # Unit tests for my_cpu custom operators
 
 set(onnxruntime_test_my_cpu_srcs
-  ${ONNXRUNTIME_ROOT}/test/my_cpu/fast_gelu_op_test.cc
+  ${ONNXRUNTIME_ROOT}/test/providers/my_cpu/fast_gelu_op_test.cc
 )
 
 # TODO: Add more test files as operators are implemented
-# ${ONNXRUNTIME_ROOT}/test/my_cpu/skip_layer_norm_test.cc
+# ${ONNXRUNTIME_ROOT}/test/providers/my_cpu/skip_layer_norm_test.cc
 
 # Add test source files to main test target
 # This assumes integration with existing ONNX Runtime test infrastructure

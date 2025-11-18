@@ -1,13 +1,18 @@
 # ONNX Runtime 自定义算子实现计划 - Tiny-GPT2 CPU 基础版
 
+> **📁 目录结构说明**：
+> - 算子实现位于：`onnxruntime/core/providers/my_cpu/`（与 cpu/、cuda/ 等 EP 平级）
+> - 测试代码位于：`onnxruntime/test/providers/my_cpu/`（与其他 EP 测试平级）
+> - 文档中的旧路径 `my_cpu/` 或 `test/my_cpu/` 均指新的完整路径
+
 ## 🎯 实现状态总览
 
 **最后更新**: 2025-11-18
 
 ### ✅ 已完成（阶段1 基础实现）
-- [x] 目录结构创建 (`my_cpu/`, `test/my_cpu/`)
+- [x] 目录结构创建 (`core/providers/my_cpu/`, `test/providers/my_cpu/`)
 - [x] **FastGELU 算子实现**（基础版本，标量实现）
-  - 文件：`my_cpu/bert/fast_gelu.{h,cc}` (~200 行)
+  - 文件：`core/providers/my_cpu/bert/fast_gelu.{h,cc}` (~200 行)
   - 特性：支持 bias 输入，完整错误处理
   - 优化：包含 TODO-OPTIMIZE 标注（AVX2, OpenMP）
 - [x] **FastGELU 单元测试**（完整测试套件）
@@ -106,13 +111,13 @@
 
 ## 📋 实现方式说明
 
-**目录结构**：所有实现代码放在 `onnxruntime/my_cpu/` 目录下，独立于现有的 `contrib_ops/cpu/` 目录。
+**目录结构**：所有实现代码放在 `onnxruntime/core/providers/my_cpu/` 目录下，与 `cpu/`、`cuda/` 等其他 execution provider 平级。
 
 **优势**：
-- ✅ 与现有代码完全隔离，互不影响
+- ✅ 与标准 EP 结构一致，符合 ONNX Runtime 规范
 - ✅ 独立的命名空间 `onnxruntime::my_cpu`
 - ✅ 便于学习、实验和维护
-- ✅ 可参考 contrib_ops 实现，但不依赖它
+- ✅ 可参考其他 provider 实现，但保持独立
 
 ---
 
@@ -379,21 +384,28 @@ test/my_cpu/
 
 ```
 onnxruntime/
-├── my_cpu/                              # 【新建】自定义 CPU 算子根目录
-│   ├── CMakeLists.txt                   # CMake 构建文件
-│   ├── my_cpu_kernels.h                 # 算子注册头文件
-│   ├── my_cpu_kernels.cc                # 算子注册实现
-│   └── bert/                            # BERT/GPT 系列算子
-│       ├── fast_gelu.h                  # FastGELU 声明
-│       ├── fast_gelu.cc                 # FastGELU 实现
-│       ├── skip_layer_norm.h            # SkipLayerNorm（可选）
-│       └── skip_layer_norm.cc
+├── core/
+│   └── providers/
+│       ├── cpu/                         # 标准 CPU EP
+│       ├── cuda/                        # 标准 CUDA EP
+│       └── my_cpu/                      # 【新建】自定义 CPU 算子目录
+│           ├── CMakeLists.txt           # CMake 构建文件
+│           ├── my_cpu_kernels.h         # 算子注册头文件
+│           ├── my_cpu_kernels.cc        # 算子注册实现
+│           └── bert/                    # BERT/GPT 系列算子
+│               ├── fast_gelu.h          # FastGELU 声明
+│               ├── fast_gelu.cc         # FastGELU 实现
+│               ├── skip_layer_norm.h    # SkipLayerNorm（可选）
+│               └── skip_layer_norm.cc
 │
 ├── test/
-│   └── my_cpu/                          # 【新建】测试目录
-│       ├── CMakeLists.txt
-│       ├── fast_gelu_op_test.cc         # FastGELU 单元测试
-│       └── skip_layer_norm_test.cc      # SkipLayerNorm 测试
+│   └── providers/
+│       ├── cpu/                         # CPU EP 测试
+│       ├── cuda/                        # CUDA EP 测试
+│       └── my_cpu/                      # 【新建】my_cpu 测试目录
+│           ├── CMakeLists.txt
+│           ├── fast_gelu_op_test.cc     # FastGELU 单元测试
+│           └── skip_layer_norm_test.cc  # SkipLayerNorm 测试
 │
 ├── docs/
 │   └── my_operators/                    # 【已创建】文档目录

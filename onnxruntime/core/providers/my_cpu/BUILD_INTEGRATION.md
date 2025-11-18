@@ -4,7 +4,7 @@
 
 ## 📋 集成概述
 
-`my_cpu` 自定义算子已完全集成到 ONNX Runtime 构建系统，与 `contrib_ops` 类似：
+`my_cpu` 自定义算子已完全集成到 ONNX Runtime 构建系统，位于 `onnxruntime/core/providers/my_cpu/`，与其他 EP（cpu/、cuda/ 等）平级：
 
 - ✅ 源文件自动包含在 `onnxruntime_providers` 静态库中
 - ✅ CPU Execution Provider 自动注册 my_cpu 算子
@@ -20,8 +20,8 @@
 ```cmake
 # 第13-18行：添加源文件扫描
 file(GLOB_RECURSE onnxruntime_my_cpu_ops_srcs CONFIGURE_DEPENDS
-  "${ONNXRUNTIME_ROOT}/my_cpu/*.h"
-  "${ONNXRUNTIME_ROOT}/my_cpu/*.cc"
+  "${ONNXRUNTIME_ROOT}/core/providers/my_cpu/*.h"
+  "${ONNXRUNTIME_ROOT}/core/providers/my_cpu/*.cc"
 )
 
 # 第62-67行：添加到 onnxruntime_providers_src
@@ -34,7 +34,7 @@ endif()
 
 **编译流程**:
 ```
-my_cpu/*.cc → onnxruntime_providers (静态库) → onnxruntime.dll/libonnxruntime.so
+core/providers/my_cpu/*.cc → onnxruntime_providers (静态库) → onnxruntime.dll/libonnxruntime.so
 ```
 
 ---
@@ -81,8 +81,8 @@ CPU EP 初始化 → RegisterCPUKernels() → RegisterMyCpuKernels()
 # 第497-507行：添加测试源文件
 if(NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_REDUCED_OPS_BUILD)
   file(GLOB_RECURSE onnxruntime_test_my_cpu_src CONFIGURE_DEPENDS
-    "${TEST_SRC_DIR}/my_cpu/*.cc"
-    "${TEST_SRC_DIR}/my_cpu/*.h"
+    "${TEST_SRC_DIR}/providers/my_cpu/*.cc"
+    "${TEST_SRC_DIR}/providers/my_cpu/*.h"
     )
   if(onnxruntime_test_my_cpu_src)
     list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_my_cpu_src})
@@ -93,7 +93,7 @@ endif()
 
 **测试流程**:
 ```
-test/my_cpu/*.cc → onnxruntime_test_all → ctest (FastGeluOpTest.*)
+test/providers/my_cpu/*.cc → onnxruntime_test_all → ctest (FastGeluOpTest.*)
 ```
 
 ---
@@ -182,22 +182,27 @@ dumpbin /EXPORTS onnxruntime.dll | findstr Gelu
 
 ```
 onnxruntime/
-├── my_cpu/                          # 源代码目录
-│   ├── bert/
-│   │   ├── fast_gelu.h              → 编译到 onnxruntime_providers.lib
-│   │   └── fast_gelu.cc             → 编译到 onnxruntime_providers.lib
-│   ├── my_cpu_kernels.h             → 编译到 onnxruntime_providers.lib
-│   └── my_cpu_kernels.cc            → 编译到 onnxruntime_providers.lib
+├── core/
+│   └── providers/
+│       ├── cpu/                      (标准 CPU EP)
+│       ├── cuda/                     (标准 CUDA EP)
+│       └── my_cpu/                   (你的自定义算子) ✅
+│           ├── bert/
+│           │   ├── fast_gelu.h      → 编译到 onnxruntime_providers.lib
+│           │   └── fast_gelu.cc     → 编译到 onnxruntime_providers.lib
+│           ├── my_cpu_kernels.h     → 编译到 onnxruntime_providers.lib
+│           └── my_cpu_kernels.cc    → 编译到 onnxruntime_providers.lib
 │
-├── test/my_cpu/                     # 测试目录
-│   └── fast_gelu_op_test.cc         → 编译到 onnxruntime_test_all.exe
-│
-├── onnxruntime/core/providers/cpu/
-│   └── cpu_execution_provider.cc    → 调用 RegisterMyCpuKernels()
+├── test/
+│   └── providers/
+│       ├── cpu/                      (CPU EP 测试)
+│       ├── cuda/                     (CUDA EP 测试)
+│       └── my_cpu/                   (你的测试) ✅
+│           └── fast_gelu_op_test.cc → 编译到 onnxruntime_test_all.exe
 │
 └── cmake/
-    ├── onnxruntime_providers_cpu.cmake   → 包含 my_cpu/*.cc
-    └── onnxruntime_unittests.cmake       → 包含 test/my_cpu/*.cc
+    ├── onnxruntime_providers_cpu.cmake   → 包含 core/providers/my_cpu/*.cc
+    └── onnxruntime_unittests.cmake       → 包含 test/providers/my_cpu/*.cc
 ```
 
 ---
@@ -206,8 +211,8 @@ onnxruntime/
 
 ### 编译时
 
-1. **CMake 配置阶段**:
-   - `onnxruntime_providers_cpu.cmake` 扫描 `my_cpu/*.cc`
+### 1. **CMake 配置阶段**:
+   - `onnxruntime_providers_cpu.cmake` 扫描 `core/providers/my_cpu/*.cc`
    - 将 my_cpu 源文件添加到 `onnxruntime_providers_src` 列表
 
 2. **编译阶段**:
@@ -241,14 +246,14 @@ onnxruntime/
 ## ❓ 常见问题
 
 ### Q: my_cpu 源文件会被自动编译吗？
-**A**: 是的。只要 `my_cpu/*.cc` 文件存在，就会被自动扫描并包含在构建中。
+**A**: 是的。只要 `core/providers/my_cpu/*.cc` 文件存在，就会被自动扫描并包含在构建中。
 
 ### Q: 是否需要修改其他 CMakeLists.txt？
-**A**: 不需要。`my_cpu/CMakeLists.txt` 仅用于独立构建测试，主构建系统不使用它。
+**A**: 不需要。`core/providers/my_cpu/CMakeLists.txt` 仅用于独立构建测试，主构建系统不使用它。
 
 ### Q: 如何禁用 my_cpu 算子？
 **A**: 有两种方式：
-1. 删除或重命名 `my_cpu/` 目录
+1. 删除或重命名 `core/providers/my_cpu/` 目录
 2. 在 CMake 中添加条件：
    ```cmake
    if(NOT DISABLE_MY_CPU_OPS)
@@ -285,7 +290,7 @@ onnxruntime/
 
 | 特性 | contrib_ops | my_cpu |
 |------|-------------|---------|
-| **目录** | `contrib_ops/cpu/` | `my_cpu/` |
+| **目录** | `contrib_ops/cpu/` | `core/providers/my_cpu/` |
 | **命名空间** | `onnxruntime::contrib` | `onnxruntime::my_cpu` |
 | **Domain** | kMSDomain / kOnnxDomain | kMSDomain |
 | **条件编译** | `DISABLE_CONTRIB_OPS` | 无（总是启用） |
