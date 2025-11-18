@@ -9,18 +9,15 @@
 namespace onnxruntime {
 namespace test {
 
-// Static initialization to ensure schemas are registered before tests run
-namespace {
-struct SchemaRegistrar {
-  SchemaRegistrar() {
-    onnxruntime::contrib::RegisterMyVirtualNpuSchemas();
-  }
-};
-static SchemaRegistrar schema_registrar_instance;
-}  // namespace
+// Helper to ensure schemas are registered
+static void EnsureSchemasRegistered() {
+  onnxruntime::contrib::RegisterMyVirtualNpuSchemas();
+}
 
 // Basic functionality test for FastGelu
 TEST(FastGeluTest, BasicFloat32) {
+  EnsureSchemasRegistered();
+
   OpTester test("FastGelu", 1, kMyCustomDomain);
 
   // Simple test case
