@@ -10,8 +10,9 @@ namespace contrib {
 ONNX_OPERATOR_SET_SCHEMA_EX(
     FastGelu,
     MyVirtualNpu,
-    kMyCustomDomain,
+    ::onnxruntime::kMyCustomDomain,
     1,
+    true,
     OpSchema()
         .SetDoc("FastGelu activation function implementation for virtual NPU domain.")
         .Input(0, "X", "Input tensor", "T")
@@ -29,7 +30,7 @@ void RegisterMyVirtualNpuSchemas() {
   // Register domain version range
   auto& domainToVersionRangeInstance = ONNX_NAMESPACE::OpSchemaRegistry::DomainToVersionRange::Instance();
   domainToVersionRangeInstance.AddDomainToVersion(kMyCustomDomain, 1, 1);
-  
+
   // Register FastGelu schema
   auto schema = ONNX_NAMESPACE::GetOpSchema<ONNX_OPERATOR_SET_SCHEMA_CLASS_NAME(MyVirtualNpu, 1, FastGelu)>();
   ONNX_NAMESPACE::RegisterSchema(schema);
