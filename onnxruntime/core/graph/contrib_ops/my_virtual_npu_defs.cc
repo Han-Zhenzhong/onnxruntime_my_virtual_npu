@@ -31,6 +31,11 @@ namespace onnxruntime {
 namespace contrib {
 
 void RegisterMyVirtualNpuSchemas() {
+  static bool schemas_registered = false;
+  if (schemas_registered) {
+    return;  // Already registered, skip
+  }
+
   // Register domain version range
   auto& domainToVersionRangeInstance = ONNX_NAMESPACE::OpSchemaRegistry::DomainToVersionRange::Instance();
   domainToVersionRangeInstance.AddDomainToVersion(kMyCustomDomain, 1, 1);
@@ -38,6 +43,8 @@ void RegisterMyVirtualNpuSchemas() {
   // Register FastGelu schema
   auto schema = ONNX_NAMESPACE::GetOpSchema<ONNX_NAMESPACE::ONNX_OPERATOR_SET_SCHEMA_CLASS_NAME(MyVirtualNpu, 1, FastGelu)>();
   ONNX_NAMESPACE::RegisterSchema(schema);
+
+  schemas_registered = true;
 }
 
 }  // namespace contrib
