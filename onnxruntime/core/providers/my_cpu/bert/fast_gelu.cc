@@ -120,23 +120,21 @@ void FastGelu<float>::ComputeGeluAVX2(const float* input, float* output, size_t 
 #endif
 */
 
-// Register kernel using ONNX_OPERATOR_TYPED_KERNEL_EX macro
-// This macro defines the kernel class and specializes BuildKernelCreateInfo
-ONNX_OPERATOR_TYPED_KERNEL_EX(
+// Register kernel using ONNX_OPERATOR_KERNEL_EX macro
+// Using non-TYPED version to avoid template parsing issues in macro
+ONNX_OPERATOR_KERNEL_EX(
     FastGelu,
     kMSDomain,
     1,
-    float,
     kCpuExecutionProvider,
     KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<float>()),
     FastGelu<float>);
 
 // TODO: Add float16 support when needed
-// ONNX_OPERATOR_TYPED_KERNEL_EX(
+// ONNX_OPERATOR_KERNEL_EX(
 //     FastGelu,
 //     kMSDomain,
 //     1,
-//     MLFloat16,
 //     kCpuExecutionProvider,
 //     KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<MLFloat16>()),
 //     FastGelu<MLFloat16>);
