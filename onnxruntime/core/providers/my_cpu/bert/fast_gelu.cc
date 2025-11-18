@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "core/providers/my_cpu/bert/fast_gelu.h"
+#include "core/providers/cpu/tensor/utils.h"
 #include <cmath>
 
 namespace onnxruntime {
@@ -119,11 +120,26 @@ void FastGelu<float>::ComputeGeluAVX2(const float* input, float* output, size_t 
 #endif
 */
 
-// Template instantiation
-template class FastGelu<float>;
+// Register kernel using ONNX_OPERATOR_TYPED_KERNEL_EX macro
+// This macro defines the kernel class and specializes BuildKernelCreateInfo
+ONNX_OPERATOR_TYPED_KERNEL_EX(
+    FastGelu,
+    kMSDomain,
+    1,
+    float,
+    kCpuExecutionProvider,
+    KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<float>()),
+    FastGelu<float>);
 
 // TODO: Add float16 support when needed
-// template class FastGelu<MLFloat16>;
+// ONNX_OPERATOR_TYPED_KERNEL_EX(
+//     FastGelu,
+//     kMSDomain,
+//     1,
+//     MLFloat16,
+//     kCpuExecutionProvider,
+//     KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<MLFloat16>()),
+//     FastGelu<MLFloat16>);
 
 }  // namespace my_cpu
 }  // namespace onnxruntime

@@ -8,12 +8,6 @@
 namespace onnxruntime {
 namespace my_cpu {
 
-// Define operator kernel classes
-class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kCpuExecutionProvider, kMSDomain, 1, float, FastGelu);
-
-// TODO: Add more operators as needed
-// class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kCpuExecutionProvider, kMSDomain, 1, float, SkipLayerNormalization);
-
 Status RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
   static const BuildKernelCreateInfoFn function_table[] = {
       // FastGelu operator
