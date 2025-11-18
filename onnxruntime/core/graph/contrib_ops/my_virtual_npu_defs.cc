@@ -21,7 +21,7 @@ ONNX_OPERATOR_SET_SCHEMA_EX(
             {"tensor(float)", "tensor(float16)", "tensor(double)"},
             "Constrain input and output types to float tensors.")
         .SetContextDependentFunctionBodyBuilder(
-            [](const FunctionBodyBuildContext& ctx, const OpSchema& schema, FunctionProto& functionProto) {
+            [](const FunctionBodyBuildContext&, const OpSchema&, FunctionProto&) {
               return true;
             }));
 
@@ -36,7 +36,7 @@ void RegisterMyVirtualNpuSchemas() {
   domainToVersionRangeInstance.AddDomainToVersion(kMyCustomDomain, 1, 1);
 
   // Register FastGelu schema
-  auto schema = ONNX_NAMESPACE::GetOpSchema<ONNX_OPERATOR_SET_SCHEMA_CLASS_NAME(MyVirtualNpu, 1, FastGelu)>();
+  auto schema = ONNX_NAMESPACE::GetOpSchema<ONNX_NAMESPACE::ONNX_OPERATOR_SET_SCHEMA_CLASS_NAME(MyVirtualNpu, 1, FastGelu)>();
   ONNX_NAMESPACE::RegisterSchema(schema);
 }
 
