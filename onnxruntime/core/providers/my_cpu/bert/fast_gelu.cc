@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "my_cpu/bert/fast_gelu.h"
+#include "core/providers/my_cpu/bert/fast_gelu.h"
 #include <cmath>
 
 namespace onnxruntime {
