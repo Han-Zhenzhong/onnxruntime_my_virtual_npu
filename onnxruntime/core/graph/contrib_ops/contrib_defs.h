@@ -57,6 +57,8 @@ void RegisterQuantizationSchemas();
 void RegisterCollectiveOps();
 #endif
 
+void RegisterMyVirtualNpuSchemas();
+
 constexpr const float kDefaultSkipLayerNormEpsilon = 1e-12f;
 constexpr const float kDefaultEmbedLayerNormEpsilon = 1e-12f;
 }  // namespace contrib

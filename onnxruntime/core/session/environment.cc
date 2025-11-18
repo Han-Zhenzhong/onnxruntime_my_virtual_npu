@@ -283,6 +283,7 @@ Status Environment::Initialize(std::unique_ptr<logging::LoggingManager> logging_
       // internal opset that has NHWC versions of ONNX operators
       RegisterOpSetSchema<internal_nhwc_onnx::OpSet_Internal_NHWC_ONNX>();
       contrib::RegisterContribSchemas();
+      contrib::RegisterMyVirtualNpuSchemas();
 #endif
 
 #ifdef USE_DML
