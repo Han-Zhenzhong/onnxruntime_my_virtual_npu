@@ -74,15 +74,16 @@ inline float FastGelu::ComputeGeluValue(float x) const {
   return kHalf * x * (1.0f + tanh_val);
 }
 
-// Register kernel using ONNX_OPERATOR_KERNEL_EX macro
-// Using non-TYPED, non-template version to avoid macro parsing issues
+}  // namespace my_cpu
+
+// Register kernel - must be in onnxruntime namespace, not my_cpu
+// The macro creates template specialization that must be in onnxruntime namespace
 ONNX_OPERATOR_KERNEL_EX(
     FastGelu,
     kMSDomain,
     1,
     kCpuExecutionProvider,
     KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<float>()),
-    FastGelu);
+    my_cpu::FastGelu);
 
-}  // namespace my_cpu
 }  // namespace onnxruntime
