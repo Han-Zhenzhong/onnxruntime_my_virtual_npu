@@ -4,23 +4,9 @@
 #include "gtest/gtest.h"
 #include "test/providers/provider_test_utils.h"
 #include "core/graph/constants.h"
-#include "core/graph/contrib_ops/contrib_defs.h"
 
 namespace onnxruntime {
 namespace test {
-
-// Ensure schemas are registered before tests run
-class FastGeluTestEnvironment : public ::testing::Environment {
- public:
-  void SetUp() override {
-    // Register custom domain schemas
-    contrib::RegisterMyVirtualNpuSchemas();
-  }
-};
-
-// Register the test environment
-static ::testing::Environment* const fast_gelu_env =
-    ::testing::AddGlobalTestEnvironment(new FastGeluTestEnvironment);
 
 // Basic functionality test for FastGelu
 TEST(FastGeluTest, BasicFloat32) {
