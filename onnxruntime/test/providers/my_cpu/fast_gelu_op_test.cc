@@ -3,13 +3,14 @@
 
 #include "gtest/gtest.h"
 #include "test/providers/provider_test_utils.h"
+#include "core/graph/constants.h"
 
 namespace onnxruntime {
 namespace test {
 
 // Basic functionality test for FastGelu
 TEST(FastGeluTest, BasicFloat32) {
-  OpTester test("FastGelu", 1, kMSDomain);
+  OpTester test("FastGelu", 1, kMyCustomDomain);
 
   // Simple test case
   std::vector<int64_t> shape = {2, 3};
@@ -34,7 +35,7 @@ TEST(FastGeluTest, BasicFloat32) {
 
 // Test different tensor shapes
 TEST(FastGeluTest, DifferentShapes) {
-  OpTester test("FastGelu", 1, kMSDomain);
+  OpTester test("FastGelu", 1, kMyCustomDomain);
 
   // Test 3D tensor [1, 4, 2]
   std::vector<int64_t> shape = {1, 4, 2};
@@ -60,7 +61,7 @@ TEST(FastGeluTest, DifferentShapes) {
 
 // Test edge cases
 TEST(FastGeluTest, EdgeCases) {
-  OpTester test("FastGelu", 1, kMSDomain);
+  OpTester test("FastGelu", 1, kMyCustomDomain);
 
   std::vector<int64_t> shape = {5};
   std::vector<float> input = {
@@ -87,7 +88,7 @@ TEST(FastGeluTest, EdgeCases) {
 
 // Test single element
 TEST(FastGeluTest, SingleElement) {
-  OpTester test("FastGelu", 1, kMSDomain);
+  OpTester test("FastGelu", 1, kMyCustomDomain);
 
   std::vector<int64_t> shape = {1};
   std::vector<float> input = {0.5f};
@@ -100,7 +101,7 @@ TEST(FastGeluTest, SingleElement) {
 
 // Test large tensor
 TEST(FastGeluTest, LargeTensor) {
-  OpTester test("FastGelu", 1, kMSDomain);
+  OpTester test("FastGelu", 1, kMyCustomDomain);
 
   // Test with larger tensor size (common in GPT-2: [batch, seq, hidden])
   std::vector<int64_t> shape = {1, 8, 768};

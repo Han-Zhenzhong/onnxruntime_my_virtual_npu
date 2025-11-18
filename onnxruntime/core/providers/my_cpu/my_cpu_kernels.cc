@@ -6,9 +6,9 @@
 #include "core/framework/op_kernel.h"
 
 // Forward declare the kernel class created by ONNX_OPERATOR_KERNEL_EX macro
-// This class is defined in fast_gelu.cc
+// This class is defined in fast_gelu.cc using kMyCustomDomain
 namespace onnxruntime {
-class kCpuExecutionProvider_FastGelu_kMSDomain_ver1;
+class kCpuExecutionProvider_FastGelu_kMyCustomDomain_ver1;
 }
 
 namespace onnxruntime {
@@ -17,14 +17,15 @@ namespace my_cpu {
 Status RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
   static const BuildKernelCreateInfoFn function_table[] = {
       // FastGelu operator (using non-TYPED macro version)
-      // Class is forward declared above and defined in fast_gelu.cc
-      ::onnxruntime::BuildKernelCreateInfo<::onnxruntime::kCpuExecutionProvider_FastGelu_kMSDomain_ver1>,
+      // Class is forward declared above and defined in fast_gelu.cc using kMyCustomDomain
+      ::onnxruntime::BuildKernelCreateInfo<::onnxruntime::kCpuExecutionProvider_FastGelu_kMyCustomDomain_ver1>,
 
       // TODO-OPTIMIZE: [Fusion] Add fused operators for better performance
+      // Use kMyCustomDomain to avoid conflicts with existing operators
       // BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
-      //     kCpuExecutionProvider, kMSDomain, 1, SkipLayerNormalization)>,
+      //     kCpuExecutionProvider, kMyCustomDomain, 1, SkipLayerNormalization)>,
       // BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
-      //     kCpuExecutionProvider, kMSDomain, 1, BiasGelu)>,
+      //     kCpuExecutionProvider, kMyCustomDomain, 1, BiasGelu)>,
   };
 
   for (auto& function : function_table) {

@@ -3,6 +3,7 @@
 
 #include "core/providers/my_cpu/bert/fast_gelu.h"
 #include "core/providers/cpu/tensor/utils.h"
+#include "core/graph/constants.h"
 #include <cmath>
 
 namespace onnxruntime {
@@ -78,9 +79,10 @@ inline float FastGelu::ComputeGeluValue(float x) const {
 
 // Register kernel - must be in onnxruntime namespace, not my_cpu
 // The macro creates template specialization that must be in onnxruntime namespace
+// Use custom domain to avoid conflict with existing FastGelu in contrib_ops
 ONNX_OPERATOR_KERNEL_EX(
     FastGelu,
-    kMSDomain,
+    kMyCustomDomain,
     1,
     kCpuExecutionProvider,
     KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<float>()),
