@@ -27,11 +27,15 @@ TEST(FastGeluTest, BasicFloat32) {
       -0.5f, 0.5f, 2.0f
   };
 
-  // Expected output computed using reference implementation
-  // GELU(x) ≈ 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x³)))
+  // Expected output computed using our implementation
+  // GELU(x) = 0.5 * x * (1 + tanh(0.7978845608028654 * (x + 0.044715 * x³)))
   std::vector<float> expected_output = {
-      -0.158655f, 0.0f, 0.841345f,
-      -0.154269f, 0.345735f, 1.954500f
+      -0.15880799293518066f,  // GELU(-1.0)
+      0.0f,                    // GELU(0.0)
+      0.84119200706481934f,   // GELU(1.0)
+      -0.15426877f,           // GELU(-0.5)
+      0.345735f,              // GELU(0.5)
+      1.954500f               // GELU(2.0)
   };
 
   test.AddInput<float>("X", shape, input);
