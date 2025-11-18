@@ -37,8 +37,8 @@ TEST(FastGeluTest, BasicFloat32) {
   test.AddInput<float>("X", shape, input);
   test.AddOutput<float>("Y", shape, expected_output);
 
-  // Test CPU execution provider only
-  test.Run(OpTester::ExpectResult::kExpectSuccess, "", {kCpuExecutionProvider});
+  // Test with default execution providers
+  test.Run();
 }
 
 // Test different tensor shapes
