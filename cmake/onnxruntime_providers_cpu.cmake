@@ -15,6 +15,12 @@ file(GLOB_RECURSE onnxruntime_cpu_contrib_ops_srcs CONFIGURE_DEPENDS
   "${ONNXRUNTIME_ROOT}/contrib_ops/cpu/*.cc"
 )
 
+# Custom my_cpu operators
+file(GLOB_RECURSE onnxruntime_my_cpu_ops_srcs CONFIGURE_DEPENDS
+  "${ONNXRUNTIME_ROOT}/my_cpu/*.h"
+  "${ONNXRUNTIME_ROOT}/my_cpu/*.cc"
+)
+
 file(GLOB_RECURSE onnxruntime_cuda_contrib_ops_cc_srcs CONFIGURE_DEPENDS
   "${ONNXRUNTIME_ROOT}/contrib_ops/cuda/*.h"
   "${ONNXRUNTIME_ROOT}/contrib_ops/cuda/*.cc"
@@ -59,6 +65,13 @@ if(NOT onnxruntime_DISABLE_CONTRIB_OPS)
   # add using ONNXRUNTIME_ROOT so they show up under the 'contrib_ops' folder in Visual Studio
   source_group(TREE ${ONNXRUNTIME_ROOT} FILES ${onnxruntime_cpu_contrib_ops_srcs})
   list(APPEND onnxruntime_providers_src ${onnxruntime_cpu_contrib_ops_srcs})
+endif()
+
+# Add my_cpu custom operators
+if(onnxruntime_my_cpu_ops_srcs)
+  source_group(TREE ${ONNXRUNTIME_ROOT} FILES ${onnxruntime_my_cpu_ops_srcs})
+  list(APPEND onnxruntime_providers_src ${onnxruntime_my_cpu_ops_srcs})
+  message(STATUS "my_cpu custom operators enabled")
 endif()
 
 if (onnxruntime_ENABLE_TRAINING_OPS AND NOT onnxruntime_ENABLE_TRAINING)

@@ -14,6 +14,9 @@
 #include "contrib_ops/cpu/cpu_contrib_kernels.h"
 #endif
 
+// Custom my_cpu operators
+#include "my_cpu/my_cpu_kernels.h"
+
 #if defined(ENABLE_TRAINING_OPS)
 #include "orttraining/training_ops/cpu/cpu_training_kernels.h"
 #endif
@@ -3814,6 +3817,8 @@ Status RegisterCPUKernels(KernelRegistry& kernel_registry) {
 #ifndef DISABLE_CONTRIB_OPS
   ORT_RETURN_IF_ERROR(::onnxruntime::contrib::RegisterCpuContribKernels(kernel_registry));
 #endif
+  // Register custom my_cpu operators
+  ORT_RETURN_IF_ERROR(::onnxruntime::my_cpu::RegisterMyCpuKernels(kernel_registry));
 #if defined(ENABLE_TRAINING_OPS)
   ORT_RETURN_IF_ERROR(::onnxruntime::contrib::RegisterCpuTrainingKernels(kernel_registry));
 #endif
