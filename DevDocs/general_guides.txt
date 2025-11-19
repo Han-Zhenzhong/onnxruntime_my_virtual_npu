@@ -1,0 +1,4 @@
+使用CI脚本的编译命令
+  python tools/ci_build/build.py   --build_dir build   --config Release   --enable_pybind   --parallel 5
+
+编译、单元测试完成后，python wheel包在 build/Release/dist 下，按照该包后可测试大模型执行（有预先安装的要先卸载，运行不用在onnxruntime源码根目录下进行）。
