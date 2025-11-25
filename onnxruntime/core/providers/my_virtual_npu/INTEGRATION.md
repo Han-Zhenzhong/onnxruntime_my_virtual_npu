@@ -1,6 +1,6 @@
-# Integration Guide for my_cpu Custom Operators
+# Integration Guide for my_virtual_npu Custom Operators
 
-This document describes how to integrate the my_cpu custom operators into ONNX Runtime build system.
+This document describes how to integrate the my_virtual_npu custom operators into ONNX Runtime build system.
 
 ## Quick Start
 
@@ -10,16 +10,16 @@ Ensure the following structure exists:
 
 ```
 onnxruntime/
-├── my_cpu/
+├── my_virtual_npu/
 │   ├── bert/
 │   │   ├── fast_gelu.h
 │   │   └── fast_gelu.cc
-│   ├── my_cpu_kernels.h
-│   ├── my_cpu_kernels.cc
+│   ├── my_virtual_npu_kernels.h
+│   ├── my_virtual_npu_kernels.cc
 │   ├── CMakeLists.txt
 │   ├── README.md
 │   └── generate_test_data.py
-└── test/my_cpu/
+└── test/my_virtual_npu/
     ├── fast_gelu_op_test.cc
     └── CMakeLists.txt
 ```
@@ -31,18 +31,18 @@ onnxruntime/
 Add the following to `onnxruntime/CMakeLists.txt`:
 
 ```cmake
-# Add custom CPU operators (my_cpu)
-if(EXISTS ${ONNXRUNTIME_ROOT}/my_cpu/CMakeLists.txt)
-  message(STATUS "Building custom CPU operators (my_cpu)")
-  add_subdirectory(my_cpu)
-  list(APPEND onnxruntime_EXTERNAL_LIBRARIES onnxruntime_my_cpu)
+# Add custom CPU operators (my_virtual_npu)
+if(EXISTS ${ONNXRUNTIME_ROOT}/my_virtual_npu/CMakeLists.txt)
+  message(STATUS "Building custom CPU operators (my_virtual_npu)")
+  add_subdirectory(my_virtual_npu)
+  list(APPEND onnxruntime_EXTERNAL_LIBRARIES onnxruntime_my_virtual_npu)
 endif()
 ```
 
 #### Option B: Standalone Build (For Testing)
 
 ```bash
-cd my_cpu
+cd my_virtual_npu
 mkdir build && cd build
 cmake .. -DONNXRUNTIME_ROOT=..
 make -j$(nproc)
@@ -53,11 +53,11 @@ make -j$(nproc)
 Add to your initialization code (or modify ONNX Runtime provider registration):
 
 ```cpp
-#include "my_cpu/my_cpu_kernels.h"
+#include "my_virtual_npu/my_virtual_npu_kernels.h"
 
 // In your initialization function
 onnxruntime::KernelRegistry* registry = /* get kernel registry */;
-onnxruntime::my_cpu::RegisterMyCpuKernels(*registry);
+onnxruntime::my_virtual_npu::RegisterMyCpuKernels(*registry);
 ```
 
 ### Step 4: Build ONNX Runtime
@@ -89,7 +89,7 @@ add_subdirectory(core)
 add_subdirectory(contrib_ops)
 
 # ADD THIS LINE:
-add_subdirectory(my_cpu)
+add_subdirectory(my_virtual_npu)
 ```
 
 ### 2. Link to Main Library
@@ -103,7 +103,7 @@ target_link_libraries(onnxruntime PRIVATE
   # ... other libraries ...
 
   # ADD THIS LINE:
-  onnxruntime_my_cpu
+  onnxruntime_my_virtual_npu
 )
 ```
 
@@ -118,11 +118,11 @@ set(onnxruntime_test_framework_src_patterns
 )
 
 # ADD THIS:
-file(GLOB onnxruntime_test_my_cpu_src
-  "${ONNXRUNTIME_ROOT}/test/my_cpu/*.cc"
+file(GLOB onnxruntime_test_my_virtual_npu_src
+  "${ONNXRUNTIME_ROOT}/test/my_virtual_npu/*.cc"
 )
 
-list(APPEND onnxruntime_test_all_srcs ${onnxruntime_test_my_cpu_src})
+list(APPEND onnxruntime_test_all_srcs ${onnxruntime_test_my_virtual_npu_src})
 ```
 
 ### 4. Operator Schema Registration (If Needed)
@@ -132,7 +132,7 @@ If you need to register custom operator schemas (not just kernels), add to:
 `onnxruntime/core/graph/contrib_ops/contrib_defs.cc`
 
 ```cpp
-#include "my_cpu/bert/fast_gelu.h"
+#include "my_virtual_npu/bert/fast_gelu.h"
 
 void RegisterMyCpuSchemas() {
   ONNX_CONTRIB_OPERATOR_SCHEMA(FastGelu)
@@ -150,18 +150,18 @@ void RegisterMyCpuSchemas() {
 ### Check Build
 
 ```bash
-# Verify my_cpu library is built
-ls build/Release/my_cpu/
-# Should see: libonnxruntime_my_cpu.a (or .lib on Windows)
+# Verify my_virtual_npu library is built
+ls build/Release/my_virtual_npu/
+# Should see: libonnxruntime_my_virtual_npu.a (or .lib on Windows)
 
-# Verify test binary includes my_cpu tests
+# Verify test binary includes my_virtual_npu tests
 ./build/Release/onnxruntime_test_all --gtest_list_tests | grep FastGelu
 ```
 
 ### Run Tests
 
 ```bash
-# Run all my_cpu tests
+# Run all my_virtual_npu tests
 ./build/Release/onnxruntime_test_all --gtest_filter="*FastGelu*" -v
 
 # Expected output:
@@ -186,7 +186,7 @@ print("Available providers:", ort.get_available_providers())
 
 ## Troubleshooting
 
-### Issue: "Cannot find my_cpu/my_cpu_kernels.h"
+### Issue: "Cannot find my_virtual_npu/my_virtual_npu_kernels.h"
 
 **Solution:** Ensure `${ONNXRUNTIME_ROOT}` is in include path:
 
@@ -196,16 +196,16 @@ target_include_directories(your_target PRIVATE ${ONNXRUNTIME_ROOT})
 
 ### Issue: "Undefined reference to RegisterMyCpuKernels"
 
-**Solution:** Link against `onnxruntime_my_cpu`:
+**Solution:** Link against `onnxruntime_my_virtual_npu`:
 
 ```cmake
-target_link_libraries(your_target PRIVATE onnxruntime_my_cpu)
+target_link_libraries(your_target PRIVATE onnxruntime_my_virtual_npu)
 ```
 
 ### Issue: "Operator FastGelu not found"
 
 **Solution:** Verify operator is registered:
-1. Check `my_cpu_kernels.cc` includes operator
+1. Check `my_virtual_npu_kernels.cc` includes operator
 2. Ensure `RegisterMyCpuKernels()` is called at runtime
 3. Check operator domain matches (kMSDomain = "com.microsoft")
 
@@ -214,7 +214,7 @@ target_link_libraries(your_target PRIVATE onnxruntime_my_cpu)
 **Solution:** Add ONNX Runtime headers to include path:
 
 ```cmake
-target_include_directories(onnxruntime_my_cpu PRIVATE
+target_include_directories(onnxruntime_my_virtual_npu PRIVATE
   ${ONNXRUNTIME_ROOT}
   ${ONNXRUNTIME_ROOT}/core
 )

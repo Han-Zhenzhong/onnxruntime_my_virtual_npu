@@ -1,64 +1,64 @@
-# my_cpu 构建系统集成说明
+# my_virtual_npu 构建系统集成说明
 
-本文档描述了 `my_cpu` 自定义算子如何集成到 ONNX Runtime 主构建系统。
+本文档描述了 `my_virtual_npu` 自定义算子如何集成到 ONNX Runtime 主构建系统。
 
 ## 📋 集成概述
 
-`my_cpu` 自定义算子已完全集成到 ONNX Runtime 构建系统，位于 `onnxruntime/core/providers/my_cpu/`，与其他 EP（cpu/、cuda/ 等）平级：
+`my_virtual_npu` 自定义算子已完全集成到 ONNX Runtime 构建系统，位于 `onnxruntime/core/providers/my_virtual_npu/`，与其他 EP（cpu/、cuda/ 等）平级：
 
 - ✅ 源文件自动包含在 `onnxruntime_providers` 静态库中
-- ✅ CPU Execution Provider 自动注册 my_cpu 算子
+- ✅ CPU Execution Provider 自动注册 my_virtual_npu 算子
 - ✅ 测试文件自动包含在单元测试套件中
 
 ## 🔧 修改的文件
 
 ### 1. `cmake/onnxruntime_providers_cpu.cmake`
 
-**作用**: 将 my_cpu 源文件编译到 onnxruntime_providers 库
+**作用**: 将 my_virtual_npu 源文件编译到 onnxruntime_providers 库
 
 **修改内容**:
 ```cmake
 # 第13-18行：添加源文件扫描
-file(GLOB_RECURSE onnxruntime_my_cpu_ops_srcs CONFIGURE_DEPENDS
-  "${ONNXRUNTIME_ROOT}/core/providers/my_cpu/*.h"
-  "${ONNXRUNTIME_ROOT}/core/providers/my_cpu/*.cc"
+file(GLOB_RECURSE onnxruntime_my_virtual_npu_ops_srcs CONFIGURE_DEPENDS
+  "${ONNXRUNTIME_ROOT}/core/providers/my_virtual_npu/*.h"
+  "${ONNXRUNTIME_ROOT}/core/providers/my_virtual_npu/*.cc"
 )
 
 # 第62-67行：添加到 onnxruntime_providers_src
-if(onnxruntime_my_cpu_ops_srcs)
-  source_group(TREE ${ONNXRUNTIME_ROOT} FILES ${onnxruntime_my_cpu_ops_srcs})
-  list(APPEND onnxruntime_providers_src ${onnxruntime_my_cpu_ops_srcs})
-  message(STATUS "my_cpu custom operators enabled")
+if(onnxruntime_my_virtual_npu_ops_srcs)
+  source_group(TREE ${ONNXRUNTIME_ROOT} FILES ${onnxruntime_my_virtual_npu_ops_srcs})
+  list(APPEND onnxruntime_providers_src ${onnxruntime_my_virtual_npu_ops_srcs})
+  message(STATUS "my_virtual_npu custom operators enabled")
 endif()
 ```
 
 **编译流程**:
 ```
-core/providers/my_cpu/*.cc → onnxruntime_providers (静态库) → onnxruntime.dll/libonnxruntime.so
+core/providers/my_virtual_npu/*.cc → onnxruntime_providers (静态库) → onnxruntime.dll/libonnxruntime.so
 ```
 
 ---
 
 ### 2. `onnxruntime/core/providers/cpu/cpu_execution_provider.cc`
 
-**作用**: 注册 my_cpu 算子到 CPU Execution Provider
+**作用**: 注册 my_virtual_npu 算子到 CPU Execution Provider
 
 **修改内容**:
 ```cpp
-// 第13-19行：包含 my_cpu 头文件
+// 第13-19行：包含 my_virtual_npu 头文件
 #ifndef DISABLE_CONTRIB_OPS
 #include "contrib_ops/cpu/cpu_contrib_kernels.h"
 #endif
 
-// Custom my_cpu operators
-#include "my_cpu/my_cpu_kernels.h"
+// Custom my_virtual_npu operators
+#include "my_virtual_npu/my_virtual_npu_kernels.h"
 
-// 第3817行：注册 my_cpu kernels
+// 第3817行：注册 my_virtual_npu kernels
 Status RegisterCPUKernels(KernelRegistry& kernel_registry) {
   // ... 其他算子注册 ...
 
-  // Register custom my_cpu operators
-  ORT_RETURN_IF_ERROR(::onnxruntime::my_cpu::RegisterMyCpuKernels(kernel_registry));
+  // Register custom my_virtual_npu operators
+  ORT_RETURN_IF_ERROR(::onnxruntime::my_virtual_npu::RegisterMyCpuKernels(kernel_registry));
 
   return Status::OK();
 }
@@ -74,26 +74,26 @@ CPU EP 初始化 → RegisterCPUKernels() → RegisterMyCpuKernels()
 
 ### 3. `cmake/onnxruntime_unittests.cmake`
 
-**作用**: 将 my_cpu 测试文件包含到单元测试
+**作用**: 将 my_virtual_npu 测试文件包含到单元测试
 
 **修改内容**:
 ```cmake
 # 第497-507行：添加测试源文件
 if(NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_REDUCED_OPS_BUILD)
-  file(GLOB_RECURSE onnxruntime_test_my_cpu_src CONFIGURE_DEPENDS
-    "${TEST_SRC_DIR}/providers/my_cpu/*.cc"
-    "${TEST_SRC_DIR}/providers/my_cpu/*.h"
+  file(GLOB_RECURSE onnxruntime_test_my_virtual_npu_src CONFIGURE_DEPENDS
+    "${TEST_SRC_DIR}/providers/my_virtual_npu/*.cc"
+    "${TEST_SRC_DIR}/providers/my_virtual_npu/*.h"
     )
-  if(onnxruntime_test_my_cpu_src)
-    list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_my_cpu_src})
-    message(STATUS "my_cpu operator tests enabled")
+  if(onnxruntime_test_my_virtual_npu_src)
+    list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_my_virtual_npu_src})
+    message(STATUS "my_virtual_npu operator tests enabled")
   endif()
 endif()
 ```
 
 **测试流程**:
 ```
-test/providers/my_cpu/*.cc → onnxruntime_test_all → ctest (FastGeluOpTest.*)
+test/providers/my_virtual_npu/*.cc → onnxruntime_test_all → ctest (FastGeluOpTest.*)
 ```
 
 ---
@@ -130,8 +130,8 @@ cmake --build . --config Release --target onnxruntime_test_all
 
 ```bash
 # 构建成功后检查日志中是否有：
-# -- my_cpu custom operators enabled
-# -- my_cpu operator tests enabled
+# -- my_virtual_npu custom operators enabled
+# -- my_virtual_npu operator tests enabled
 ```
 
 ### 2. 运行单元测试
@@ -186,23 +186,23 @@ onnxruntime/
 │   └── providers/
 │       ├── cpu/                      (标准 CPU EP)
 │       ├── cuda/                     (标准 CUDA EP)
-│       └── my_cpu/                   (你的自定义算子) ✅
+│       └── my_virtual_npu/                   (你的自定义算子) ✅
 │           ├── bert/
 │           │   ├── fast_gelu.h      → 编译到 onnxruntime_providers.lib
 │           │   └── fast_gelu.cc     → 编译到 onnxruntime_providers.lib
-│           ├── my_cpu_kernels.h     → 编译到 onnxruntime_providers.lib
-│           └── my_cpu_kernels.cc    → 编译到 onnxruntime_providers.lib
+│           ├── my_virtual_npu_kernels.h     → 编译到 onnxruntime_providers.lib
+│           └── my_virtual_npu_kernels.cc    → 编译到 onnxruntime_providers.lib
 │
 ├── test/
 │   └── providers/
 │       ├── cpu/                      (CPU EP 测试)
 │       ├── cuda/                     (CUDA EP 测试)
-│       └── my_cpu/                   (你的测试) ✅
+│       └── my_virtual_npu/                   (你的测试) ✅
 │           └── fast_gelu_op_test.cc → 编译到 onnxruntime_test_all.exe
 │
 └── cmake/
-    ├── onnxruntime_providers_cpu.cmake   → 包含 core/providers/my_cpu/*.cc
-    └── onnxruntime_unittests.cmake       → 包含 test/providers/my_cpu/*.cc
+    ├── onnxruntime_providers_cpu.cmake   → 包含 core/providers/my_virtual_npu/*.cc
+    └── onnxruntime_unittests.cmake       → 包含 test/providers/my_virtual_npu/*.cc
 ```
 
 ---
@@ -212,11 +212,11 @@ onnxruntime/
 ### 编译时
 
 ### 1. **CMake 配置阶段**:
-   - `onnxruntime_providers_cpu.cmake` 扫描 `core/providers/my_cpu/*.cc`
-   - 将 my_cpu 源文件添加到 `onnxruntime_providers_src` 列表
+   - `onnxruntime_providers_cpu.cmake` 扫描 `core/providers/my_virtual_npu/*.cc`
+   - 将 my_virtual_npu 源文件添加到 `onnxruntime_providers_src` 列表
 
 2. **编译阶段**:
-   - my_cpu 源文件被编译为 `.o` / `.obj` 目标文件
+   - my_virtual_npu 源文件被编译为 `.o` / `.obj` 目标文件
    - 链接到 `onnxruntime_providers` 静态库
    - 最终链接到 `onnxruntime.dll` / `libonnxruntime.so`
 
@@ -228,7 +228,7 @@ onnxruntime/
    └─> CPUExecutionProvider::CPUExecutionProvider()
        └─> GetKernelRegistry()
            └─> RegisterCPUKernels()
-               └─> my_cpu::RegisterMyCpuKernels()
+               └─> my_virtual_npu::RegisterMyCpuKernels()
                    └─> FastGelu kernel 注册到 kMSDomain
    ```
 
@@ -237,7 +237,7 @@ onnxruntime/
    InferenceSession::Run()
    └─> 遇到 FastGelu 节点 (domain="com.microsoft")
        └─> 查找 kernel: kMSDomain + "FastGelu"
-           └─> 找到 my_cpu::FastGelu<float>
+           └─> 找到 my_virtual_npu::FastGelu<float>
                └─> 调用 Compute() 执行
    ```
 
@@ -245,24 +245,24 @@ onnxruntime/
 
 ## ❓ 常见问题
 
-### Q: my_cpu 源文件会被自动编译吗？
-**A**: 是的。只要 `core/providers/my_cpu/*.cc` 文件存在，就会被自动扫描并包含在构建中。
+### Q: my_virtual_npu 源文件会被自动编译吗？
+**A**: 是的。只要 `core/providers/my_virtual_npu/*.cc` 文件存在，就会被自动扫描并包含在构建中。
 
 ### Q: 是否需要修改其他 CMakeLists.txt？
-**A**: 不需要。`core/providers/my_cpu/CMakeLists.txt` 仅用于独立构建测试，主构建系统不使用它。
+**A**: 不需要。`core/providers/my_virtual_npu/CMakeLists.txt` 仅用于独立构建测试，主构建系统不使用它。
 
-### Q: 如何禁用 my_cpu 算子？
+### Q: 如何禁用 my_virtual_npu 算子？
 **A**: 有两种方式：
-1. 删除或重命名 `core/providers/my_cpu/` 目录
+1. 删除或重命名 `core/providers/my_virtual_npu/` 目录
 2. 在 CMake 中添加条件：
    ```cmake
-   if(NOT DISABLE_MY_CPU_OPS)
-     list(APPEND onnxruntime_providers_src ${onnxruntime_my_cpu_ops_srcs})
+   if(NOT DISABLE_MY_VIRTUAL_NPU_OPS)
+     list(APPEND onnxruntime_providers_src ${onnxruntime_my_virtual_npu_ops_srcs})
    endif()
    ```
 
-### Q: my_cpu 算子是否支持最小化构建？
-**A**: 目前 my_cpu 算子在最小化构建中**不会**被包含（与 contrib_ops 一致）。如需支持，需要在 CMake 中调整条件。
+### Q: my_virtual_npu 算子是否支持最小化构建？
+**A**: 目前 my_virtual_npu 算子在最小化构建中**不会**被包含（与 contrib_ops 一致）。如需支持，需要在 CMake 中调整条件。
 
 ---
 
@@ -288,10 +288,10 @@ onnxruntime/
 
 ### 与 contrib_ops 的对比
 
-| 特性 | contrib_ops | my_cpu |
+| 特性 | contrib_ops | my_virtual_npu |
 |------|-------------|---------|
-| **目录** | `contrib_ops/cpu/` | `core/providers/my_cpu/` |
-| **命名空间** | `onnxruntime::contrib` | `onnxruntime::my_cpu` |
+| **目录** | `contrib_ops/cpu/` | `core/providers/my_virtual_npu/` |
+| **命名空间** | `onnxruntime::contrib` | `onnxruntime::my_virtual_npu` |
 | **Domain** | kMSDomain / kOnnxDomain | kMSDomain |
 | **条件编译** | `DISABLE_CONTRIB_OPS` | 无（总是启用） |
 | **注册方式** | `RegisterCpuContribKernels()` | `RegisterMyCpuKernels()` |

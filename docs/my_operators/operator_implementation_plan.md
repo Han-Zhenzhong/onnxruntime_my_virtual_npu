@@ -1,28 +1,28 @@
 # ONNX Runtime 自定义算子实现计划 - Tiny-GPT2 CPU 基础版
 
 > **📁 目录结构说明**：
-> - 算子实现位于：`onnxruntime/core/providers/my_cpu/`（与 cpu/、cuda/ 等 EP 平级）
-> - 测试代码位于：`onnxruntime/test/providers/my_cpu/`（与其他 EP 测试平级）
-> - 文档中的旧路径 `my_cpu/` 或 `test/my_cpu/` 均指新的完整路径
+> - 算子实现位于：`onnxruntime/core/providers/my_virtual_npu/`（与 cpu/、cuda/ 等 EP 平级）
+> - 测试代码位于：`onnxruntime/test/providers/my_virtual_npu/`（与其他 EP 测试平级）
+> - 文档中的旧路径 `my_virtual_npu/` 或 `test/my_virtual_npu/` 均指新的完整路径
 
 ## 🎯 实现状态总览
 
 **最后更新**: 2025-11-18
 
 ### ✅ 已完成（阶段1 基础实现）
-- [x] 目录结构创建 (`core/providers/my_cpu/`, `test/providers/my_cpu/`)
+- [x] 目录结构创建 (`core/providers/my_virtual_npu/`, `test/providers/my_virtual_npu/`)
 - [x] **FastGELU 算子实现**（基础版本，标量实现）
-  - 文件：`core/providers/my_cpu/bert/fast_gelu.{h,cc}` (~200 行)
+  - 文件：`core/providers/my_virtual_npu/bert/fast_gelu.{h,cc}` (~200 行)
   - 特性：支持 bias 输入，完整错误处理
   - 优化：包含 TODO-OPTIMIZE 标注（AVX2, OpenMP）
 - [x] **FastGELU 单元测试**（完整测试套件）
-  - 文件：`test/my_cpu/fast_gelu_op_test.cc` (~180 行)
+  - 文件：`test/my_virtual_npu/fast_gelu_op_test.cc` (~180 行)
   - 覆盖：5个测试用例，包含边界情况和大张量
 - [x] **算子注册系统**
-  - 文件：`my_cpu/my_cpu_kernels.{h,cc}` (~60 行)
+  - 文件：`my_virtual_npu/my_virtual_npu_kernels.{h,cc}` (~60 行)
   - 状态：FastGelu 已注册到 kMSDomain
 - [x] **CMake 构建配置**
-  - 文件：`my_cpu/CMakeLists.txt`, `test/my_cpu/CMakeLists.txt`
+  - 文件：`my_virtual_npu/CMakeLists.txt`, `test/my_virtual_npu/CMakeLists.txt`
   - 特性：独立构建，预留 AVX2 编译选项
 - [x] **完整文档**（~900 行）
   - README.md - 使用指南
@@ -63,19 +63,19 @@
 
 **集成完成**：
 - ✅ 修改 `cmake/onnxruntime_providers_cpu.cmake`
-  - 添加 my_cpu 源文件扫描
-  - 将 my_cpu 源文件加入 onnxruntime_providers 库
+  - 添加 my_virtual_npu 源文件扫描
+  - 将 my_virtual_npu 源文件加入 onnxruntime_providers 库
 - ✅ 修改 `onnxruntime/core/providers/cpu/cpu_execution_provider.cc`
-  - 包含 my_cpu/my_cpu_kernels.h 头文件
+  - 包含 my_virtual_npu/my_virtual_npu_kernels.h 头文件
   - 在 RegisterCPUKernels() 中调用 RegisterMyCpuKernels()
 - ✅ 修改 `cmake/onnxruntime_unittests.cmake`
-  - 添加 test/my_cpu 测试源文件扫描
+  - 添加 test/my_virtual_npu 测试源文件扫描
   - 将测试文件加入 onnxruntime_test_all 测试套件
 
 **集成方式**：
-- my_cpu 算子与 contrib_ops 类似，被编译到 onnxruntime_providers 静态库中
-- CPU Execution Provider 在初始化时自动注册 my_cpu 算子
-- my_cpu 测试用例自动包含在单元测试中
+- my_virtual_npu 算子与 contrib_ops 类似，被编译到 onnxruntime_providers 静态库中
+- CPU Execution Provider 在初始化时自动注册 my_virtual_npu 算子
+- my_virtual_npu 测试用例自动包含在单元测试中
 
 **下一步**：编译并运行单元测试验证集成结果
 
@@ -91,13 +91,13 @@
 - ✅ 验证脚本
 
 **文件创建**：
-- `my_cpu/bert/fast_gelu.{h,cc}` - 核心实现
-- `my_cpu/my_cpu_kernels.{h,cc}` - 注册系统
-- `test/my_cpu/fast_gelu_op_test.cc` - 单元测试
-- `my_cpu/CMakeLists.txt` - 构建配置
-- `my_cpu/{README,INTEGRATION,QUICKSTART}.md` - 文档
-- `my_cpu/generate_test_data.py` - 工具
-- `my_cpu/verify.{sh,bat}` - 验证脚本
+- `my_virtual_npu/bert/fast_gelu.{h,cc}` - 核心实现
+- `my_virtual_npu/my_virtual_npu_kernels.{h,cc}` - 注册系统
+- `test/my_virtual_npu/fast_gelu_op_test.cc` - 单元测试
+- `my_virtual_npu/CMakeLists.txt` - 构建配置
+- `my_virtual_npu/{README,INTEGRATION,QUICKSTART}.md` - 文档
+- `my_virtual_npu/generate_test_data.py` - 工具
+- `my_virtual_npu/verify.{sh,bat}` - 验证脚本
 
 **代码统计**：
 - 核心代码：~400 行
@@ -111,11 +111,11 @@
 
 ## 📋 实现方式说明
 
-**目录结构**：所有实现代码放在 `onnxruntime/core/providers/my_cpu/` 目录下，与 `cpu/`、`cuda/` 等其他 execution provider 平级。
+**目录结构**：所有实现代码放在 `onnxruntime/core/providers/my_virtual_npu/` 目录下，与 `cpu/`、`cuda/` 等其他 execution provider 平级。
 
 **优势**：
 - ✅ 与标准 EP 结构一致，符合 ONNX Runtime 规范
-- ✅ 独立的命名空间 `onnxruntime::my_cpu`
+- ✅ 独立的命名空间 `onnxruntime::my_virtual_npu`
 - ✅ 便于学习、实验和维护
 - ✅ 可参考其他 provider 实现，但保持独立
 
@@ -130,36 +130,36 @@
 ```bash
 # 1. ✅ 已完成：目录结构已创建
 cd onnxruntime
-# my_cpu/bert/ 和 test/my_cpu/ 已创建
+# my_virtual_npu/bert/ 和 test/my_virtual_npu/ 已创建
 
 # 2. ✅ 已完成：基础文件已实现
-# - my_cpu/my_cpu_kernels.h (已实现)
-# - my_cpu/my_cpu_kernels.cc (已实现)
-# - my_cpu/bert/fast_gelu.h (已实现)
-# - my_cpu/bert/fast_gelu.cc (已实现)
-# - my_cpu/CMakeLists.txt (已实现)
+# - my_virtual_npu/my_virtual_npu_kernels.h (已实现)
+# - my_virtual_npu/my_virtual_npu_kernels.cc (已实现)
+# - my_virtual_npu/bert/fast_gelu.h (已实现)
+# - my_virtual_npu/bert/fast_gelu.cc (已实现)
+# - my_virtual_npu/CMakeLists.txt (已实现)
 
 # 3. ✅ 已完成：测试文件已实现
-# - test/my_cpu/fast_gelu_op_test.cc (已实现)
-# - test/my_cpu/CMakeLists.txt (已实现)
+# - test/my_virtual_npu/fast_gelu_op_test.cc (已实现)
+# - test/my_virtual_npu/CMakeLists.txt (已实现)
 
 # 4. ⏭️ 待完成：编译（需要集成到主构建系统）
 ./build.sh --config Release --parallel
 ```
 
 **已实现的文件清单**：
-- ✅ `my_cpu/bert/fast_gelu.h` - FastGELU 头文件
-- ✅ `my_cpu/bert/fast_gelu.cc` - FastGELU 实现（标量版本，含优化标注）
-- ✅ `my_cpu/my_cpu_kernels.h` - 算子注册头文件
-- ✅ `my_cpu/my_cpu_kernels.cc` - 算子注册实现
-- ✅ `my_cpu/CMakeLists.txt` - 构建配置
-- ✅ `my_cpu/README.md` - 使用文档
-- ✅ `my_cpu/INTEGRATION.md` - 集成指南
-- ✅ `my_cpu/QUICKSTART.md` - 快速参考
-- ✅ `my_cpu/generate_test_data.py` - 测试数据生成器
-- ✅ `my_cpu/verify.sh` / `verify.bat` - 验证脚本
-- ✅ `test/my_cpu/fast_gelu_op_test.cc` - 单元测试
-- ✅ `test/my_cpu/CMakeLists.txt` - 测试构建配置
+- ✅ `my_virtual_npu/bert/fast_gelu.h` - FastGELU 头文件
+- ✅ `my_virtual_npu/bert/fast_gelu.cc` - FastGELU 实现（标量版本，含优化标注）
+- ✅ `my_virtual_npu/my_virtual_npu_kernels.h` - 算子注册头文件
+- ✅ `my_virtual_npu/my_virtual_npu_kernels.cc` - 算子注册实现
+- ✅ `my_virtual_npu/CMakeLists.txt` - 构建配置
+- ✅ `my_virtual_npu/README.md` - 使用文档
+- ✅ `my_virtual_npu/INTEGRATION.md` - 集成指南
+- ✅ `my_virtual_npu/QUICKSTART.md` - 快速参考
+- ✅ `my_virtual_npu/generate_test_data.py` - 测试数据生成器
+- ✅ `my_virtual_npu/verify.sh` / `verify.bat` - 验证脚本
+- ✅ `test/my_virtual_npu/fast_gelu_op_test.cc` - 单元测试
+- ✅ `test/my_virtual_npu/CMakeLists.txt` - 测试构建配置
 
 本文档描述了在 ONNX Runtime 中为 **Tiny-GPT2-ONNX** 模型实现 CPU 算子的完整计划。
 
@@ -199,9 +199,9 @@ Tiny-GPT2 是 GPT-2 的轻量级版本，专为资源受限环境设计：
 
 #### 阶段1：必需算子（确保模型能跑）
 1. **✅ FastGELU** - GELU 激活函数（✅ 基础实现已完成）
-   - 文件：`my_cpu/bert/fast_gelu.h`, `fast_gelu.cc`
+   - 文件：`my_virtual_npu/bert/fast_gelu.h`, `fast_gelu.cc`
    - 状态：标量实现完成，含 TODO-OPTIMIZE 标注
-   - 测试：单元测试已实现 (`test/my_cpu/fast_gelu_op_test.cc`)
+   - 测试：单元测试已实现 (`test/my_virtual_npu/fast_gelu_op_test.cc`)
 
 2. **⏭️ LayerNormalization** - 层归一化（待验证是否已有）
    - 需要检查 `contrib_ops/cpu/` 中是否有可用实现
@@ -272,8 +272,8 @@ Tiny-GPT2 是 GPT-2 的轻量级版本，专为资源受限环境设计：
 
 1. **✅ FastGELU** - GELU 激活函数（已完成）
    - ✅ 基础版本：使用标准数学库实现 (`std::tanh`)
-   - ✅ 文件位置：`my_cpu/bert/fast_gelu.{h,cc}`
-   - ✅ 单元测试：`test/my_cpu/fast_gelu_op_test.cc`
+   - ✅ 文件位置：`my_virtual_npu/bert/fast_gelu.{h,cc}`
+   - ✅ 单元测试：`test/my_virtual_npu/fast_gelu_op_test.cc`
    - ✅ TODO-OPTIMIZE 标注：AVX2/SSE SIMD 加速（4-8x 预期）
    - ✅ TODO-OPTIMIZE 标注：OpenMP 并行化
    - 实现特点：
@@ -313,13 +313,13 @@ constexpr int TINY_GPT2_FFN_SIZE = 3072;
 
 #### 阶段 1：基础功能（1-2周）✅ 部分完成
 - ✅ **已完成** 实现 FastGELU 基础版本（标量计算）
-  - 文件：`my_cpu/bert/fast_gelu.{h,cc}`
+  - 文件：`my_virtual_npu/bert/fast_gelu.{h,cc}`
   - 包含完整的 TODO-OPTIMIZE 标注
 - ✅ **已完成** 编写单元测试确保正确性
-  - 文件：`test/my_cpu/fast_gelu_op_test.cc`
+  - 文件：`test/my_virtual_npu/fast_gelu_op_test.cc`
   - 覆盖：基础功能、边界情况、不同形状、大张量
 - ✅ **已完成** 构建配置和文档
-  - CMakeLists.txt (my_cpu + test)
+  - CMakeLists.txt (my_virtual_npu + test)
   - README.md, INTEGRATION.md, QUICKSTART.md
 - ⏭️ **待完成** 验证/使用已有的 LayerNormalization
 - ⏭️ **待完成** 验证/使用已有的 Attention
@@ -342,15 +342,15 @@ constexpr int TINY_GPT2_FFN_SIZE = 3072;
 // TODO-OPTIMIZE: [Cache] 可调整数据布局以提高缓存命中率
 ```
 
-### 2.4 实现方式：独立 my_cpu 目录
+### 2.4 实现方式：独立 my_virtual_npu 目录
 
 **✅ 已采用独立目录结构**：
-- ✅ 在 `onnxruntime/my_cpu/` 创建独立实现
+- ✅ 在 `onnxruntime/my_virtual_npu/` 创建独立实现
 - ✅ 不修改现有的 `contrib_ops/cpu/` 代码
 - ✅ 可以参考 contrib_ops 的实现模式
 - ✅ 便于独立管理和维护
 
-**✅ my_cpu 目录已实现**：
+**✅ my_virtual_npu 目录已实现**：
 - ✅ 与现有代码隔离，不影响原有功能
 - ✅ 便于单独编译和测试
 - ✅ 可以自由选择编码风格和优化策略
@@ -359,12 +359,12 @@ constexpr int TINY_GPT2_FFN_SIZE = 3072;
 
 **已创建的目录结构**：
 ```
-my_cpu/
+my_virtual_npu/
 ├── bert/
 │   ├── fast_gelu.h          ✅ 已实现
 │   └── fast_gelu.cc         ✅ 已实现
-├── my_cpu_kernels.h         ✅ 已实现
-├── my_cpu_kernels.cc        ✅ 已实现
+├── my_virtual_npu_kernels.h         ✅ 已实现
+├── my_virtual_npu_kernels.cc        ✅ 已实现
 ├── CMakeLists.txt           ✅ 已实现
 ├── README.md                ✅ 已实现
 ├── INTEGRATION.md           ✅ 已实现
@@ -373,14 +373,14 @@ my_cpu/
 ├── verify.sh                ✅ 已实现
 └── verify.bat               ✅ 已实现
 
-test/my_cpu/
+test/my_virtual_npu/
 ├── fast_gelu_op_test.cc     ✅ 已实现
 └── CMakeLists.txt           ✅ 已实现
 ```
 
 ## 3. 详细实现步骤
 
-### 3.0 目录结构规划（my_cpu 独立实现）
+### 3.0 目录结构规划（my_virtual_npu 独立实现）
 
 ```
 onnxruntime/
@@ -388,10 +388,10 @@ onnxruntime/
 │   └── providers/
 │       ├── cpu/                         # 标准 CPU EP
 │       ├── cuda/                        # 标准 CUDA EP
-│       └── my_cpu/                      # 【新建】自定义 CPU 算子目录
+│       └── my_virtual_npu/                      # 【新建】自定义 CPU 算子目录
 │           ├── CMakeLists.txt           # CMake 构建文件
-│           ├── my_cpu_kernels.h         # 算子注册头文件
-│           ├── my_cpu_kernels.cc        # 算子注册实现
+│           ├── my_virtual_npu_kernels.h         # 算子注册头文件
+│           ├── my_virtual_npu_kernels.cc        # 算子注册实现
 │           └── bert/                    # BERT/GPT 系列算子
 │               ├── fast_gelu.h          # FastGELU 声明
 │               ├── fast_gelu.cc         # FastGELU 实现
@@ -402,7 +402,7 @@ onnxruntime/
 │   └── providers/
 │       ├── cpu/                         # CPU EP 测试
 │       ├── cuda/                        # CUDA EP 测试
-│       └── my_cpu/                      # 【新建】my_cpu 测试目录
+│       └── my_virtual_npu/                      # 【新建】my_virtual_npu 测试目录
 │           ├── CMakeLists.txt
 │           ├── fast_gelu_op_test.cc     # FastGELU 单元测试
 │           └── skip_layer_norm_test.cc  # SkipLayerNorm 测试
@@ -424,8 +424,8 @@ onnxruntime/
 ```
 
 **关键说明**：
-- ✅ `my_cpu/` 与 `contrib_ops/` 完全独立
-- ✅ 使用独立的命名空间 `onnxruntime::my_cpu`
+- ✅ `my_virtual_npu/` 与 `contrib_ops/` 完全独立
+- ✅ 使用独立的命名空间 `onnxruntime::my_virtual_npu`
 - ✅ 独立的 CMake 构建配置
 - ✅ 可参考 contrib_ops 的代码风格，但不依赖它
 - ✅ 便于后续移植或作为示例项目
@@ -434,7 +434,7 @@ onnxruntime/
 
 #### 3.1.1 FusedAttention 算子示例
 ```cpp
-// 文件路径: onnxruntime/my_cpu/bert/attention.h
+// 文件路径: onnxruntime/my_virtual_npu/bert/attention.h
 // 参考现有的 Attention 算子扩展
 
 ONNX_OPERATOR_SCHEMA(Attention)
@@ -501,16 +501,16 @@ ONNX_OPERATOR_SCHEMA(SkipLayerNormalization)
     .TypeConstraint("U", {"tensor(float)"}, "Constrain mean and variance to float");
 ```
 
-### 3.2 算子注册（my_cpu 目录）
+### 3.2 算子注册（my_virtual_npu 目录）
 
 **✅ 已实现的注册代码**：
 
 ```cpp
-// 文件路径: onnxruntime/my_cpu/my_cpu_kernels.cc
+// 文件路径: onnxruntime/my_virtual_npu/my_virtual_npu_kernels.cc
 // 状态：✅ 已实现
 
 namespace onnxruntime {
-namespace my_cpu {
+namespace my_virtual_npu {
 
 // ✅ 已定义 FastGelu 算子类
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kCpuExecutionProvider, kMSDomain, 1, float, FastGelu);
@@ -539,7 +539,7 @@ Status RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
   return Status::OK();
 }
 
-} // namespace my_cpu
+} // namespace my_virtual_npu
 } // namespace onnxruntime
 ```
 
@@ -550,8 +550,8 @@ Status RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
 **实现状态**：✅ 完整实现，含优化标注
 
 **文件位置**：
-- ✅ `onnxruntime/my_cpu/bert/fast_gelu.h` - 头文件
-- ✅ `onnxruntime/my_cpu/bert/fast_gelu.cc` - 实现文件
+- ✅ `onnxruntime/my_virtual_npu/bert/fast_gelu.h` - 头文件
+- ✅ `onnxruntime/my_virtual_npu/bert/fast_gelu.cc` - 实现文件
 
 **实现特点**：
 - ✅ 标量实现使用 `std::tanh`
@@ -564,11 +564,11 @@ Status RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
 **核心代码片段**（已实现）：
 
 ```cpp
-// 文件路径: onnxruntime/my_cpu/bert/fast_gelu.h
+// 文件路径: onnxruntime/my_virtual_npu/bert/fast_gelu.h
 // 状态：✅ 已实现
 
 namespace onnxruntime {
-namespace my_cpu {
+namespace my_virtual_npu {
 
 template <typename T>
 class FastGelu final : public OpKernel {
@@ -584,12 +584,12 @@ class FastGelu final : public OpKernel {
   // void ComputeGeluAVX2(const T* input, T* output, size_t count) const;
 };
 
-} // namespace my_cpu
+} // namespace my_virtual_npu
 } // namespace onnxruntime
 ```
 
 ```cpp
-// 文件路径: onnxruntime/my_cpu/bert/fast_gelu.cc
+// 文件路径: onnxruntime/my_virtual_npu/bert/fast_gelu.cc
 // 状态：✅ 已实现
 
 // GELU 公式：GELU(x) ≈ 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x³)))
@@ -645,7 +645,7 @@ template class FastGelu<float>;
 // TODO: float16 支持
 // template class FastGelu<MLFloat16>;
 
-} // namespace my_cpu
+} // namespace my_virtual_npu
 } // namespace onnxruntime
 ```
   constexpr T kBeta = static_cast<T>(0.044715);
@@ -661,7 +661,7 @@ template class FastGelu<float>;
 template class FastGelu<float>;
 // template class FastGelu<MLFloat16>;  // TODO: 后续添加 FP16 支持
 
-} // namespace my_cpu
+} // namespace my_virtual_npu
 } // namespace onnxruntime
 ```
 
@@ -736,7 +736,7 @@ ls -la contrib_ops/cpu/bert/
 # 3. 检查算子注册（参考用）
 grep -r "LayerNormalization" contrib_ops/cpu/cpu_contrib_kernels.cc
 
-# 注意：我们的实现在 my_cpu/ 目录下，独立于 contrib_ops/
+# 注意：我们的实现在 my_virtual_npu/ 目录下，独立于 contrib_ops/
 ```
 
 ### 3.4 CMake 构建配置
@@ -744,32 +744,32 @@ grep -r "LayerNormalization" contrib_ops/cpu/cpu_contrib_kernels.cc
 **✅ 已实现的构建配置**：
 
 ```cmake
-# 文件路径: onnxruntime/my_cpu/CMakeLists.txt
+# 文件路径: onnxruntime/my_virtual_npu/CMakeLists.txt
 # 状态：✅ 已实现
 
 # ✅ 已定义的源文件列表
-set(onnxruntime_my_cpu_srcs
-  ${ONNXRUNTIME_ROOT}/my_cpu/bert/fast_gelu.cc
-  ${ONNXRUNTIME_ROOT}/my_cpu/bert/fast_gelu.h
-  ${ONNXRUNTIME_ROOT}/my_cpu/my_cpu_kernels.cc
-  ${ONNXRUNTIME_ROOT}/my_cpu/my_cpu_kernels.h
+set(onnxruntime_my_virtual_npu_srcs
+  ${ONNXRUNTIME_ROOT}/my_virtual_npu/bert/fast_gelu.cc
+  ${ONNXRUNTIME_ROOT}/my_virtual_npu/bert/fast_gelu.h
+  ${ONNXRUNTIME_ROOT}/my_virtual_npu/my_virtual_npu_kernels.cc
+  ${ONNXRUNTIME_ROOT}/my_virtual_npu/my_virtual_npu_kernels.h
 )
 
 # TODO: 待添加更多源文件
-# ${ONNXRUNTIME_ROOT}/my_cpu/bert/skip_layer_norm.cc
-# ${ONNXRUNTIME_ROOT}/my_cpu/bert/skip_layer_norm.h
+# ${ONNXRUNTIME_ROOT}/my_virtual_npu/bert/skip_layer_norm.cc
+# ${ONNXRUNTIME_ROOT}/my_virtual_npu/bert/skip_layer_norm.h
 
 # ✅ 创建静态库
-add_library(onnxruntime_my_cpu STATIC ${onnxruntime_my_cpu_srcs})
+add_library(onnxruntime_my_virtual_npu STATIC ${onnxruntime_my_virtual_npu_srcs})
 
 # ✅ 添加包含路径
-target_include_directories(onnxruntime_my_cpu PRIVATE
+target_include_directories(onnxruntime_my_virtual_npu PRIVATE
   ${ONNXRUNTIME_ROOT}
   ${ONNXRUNTIME_ROOT}/core
 )
 
 # ✅ 链接依赖
-target_link_libraries(onnxruntime_my_cpu PUBLIC
+target_link_libraries(onnxruntime_my_virtual_npu PUBLIC
   onnxruntime_common
   onnxruntime_framework
 )
@@ -777,12 +777,12 @@ target_link_libraries(onnxruntime_my_cpu PUBLIC
 # TODO-OPTIMIZE: [SIMD] AVX2 优化时启用（已预留）
 # if(MSVC)
 #   set_source_files_properties(
-#     ${ONNXRUNTIME_ROOT}/my_cpu/bert/fast_gelu.cc
+#     ${ONNXRUNTIME_ROOT}/my_virtual_npu/bert/fast_gelu.cc
 #     PROPERTIES COMPILE_FLAGS "/arch:AVX2"
 #   )
 # elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 #   set_source_files_properties(
-#     ${ONNXRUNTIME_ROOT}/my_cpu/bert/fast_gelu.cc
+#     ${ONNXRUNTIME_ROOT}/my_virtual_npu/bert/fast_gelu.cc
 #     PROPERTIES COMPILE_FLAGS "-mavx2 -mfma"
 #   )
 # endif()
@@ -791,23 +791,23 @@ target_link_libraries(onnxruntime_my_cpu PUBLIC
 **⏭️ 待完成：集成到主构建系统**：
 ```cmake
 # 在 onnxruntime/CMakeLists.txt 中添加（待执行）
-add_subdirectory(my_cpu)
+add_subdirectory(my_virtual_npu)
 
 # 链接到 onnxruntime 主库（待执行）
-target_link_libraries(onnxruntime PRIVATE onnxruntime_my_cpu)
+target_link_libraries(onnxruntime PRIVATE onnxruntime_my_virtual_npu)
 ```
 
 **说明**：
 - ✅ 构建配置文件已创建
 - ✅ 包含完整的编译选项和依赖
 - ⏭️ 需要修改主 CMakeLists.txt 以集成
-- 📚 详细步骤见 `my_cpu/INTEGRATION.md`
+- 📚 详细步骤见 `my_virtual_npu/INTEGRATION.md`
 
 ## 4. 测试策略（基础版）
 
 ### 4.1 单元测试 - 算子级别（确保正确性）✅ 已实现
 
-**测试文件**：✅ `onnxruntime/test/my_cpu/fast_gelu_op_test.cc`
+**测试文件**：✅ `onnxruntime/test/my_virtual_npu/fast_gelu_op_test.cc`
 
 **测试覆盖**：
 - ✅ 基础功能测试（`BasicFloat32`）
@@ -819,7 +819,7 @@ target_link_libraries(onnxruntime PRIVATE onnxruntime_my_cpu)
 **核心测试代码**（已实现）：
 
 ```cpp
-// 文件路径: onnxruntime/test/my_cpu/fast_gelu_op_test.cc
+// 文件路径: onnxruntime/test/my_virtual_npu/fast_gelu_op_test.cc
 // 状态：✅ 已实现完整测试套件
 
 namespace onnxruntime {
@@ -885,7 +885,7 @@ TEST(FastGeluTest, DISABLED_BenchmarkPerformance) {
 ```
 
 **测试工具**：
-- ✅ `my_cpu/generate_test_data.py` - Python 测试数据生成器
+- ✅ `my_virtual_npu/generate_test_data.py` - Python 测试数据生成器
   - 使用 PyTorch GELU 作为参考
   - 生成 C++ 格式的测试数据
   - 比较 PyTorch vs tanh 近似的精度
@@ -1578,7 +1578,7 @@ output = sess.run(None, {'input': x})
 ### 6.2 验证构建
 
 ```bash
-# 运行单元测试（my_cpu 算子）
+# 运行单元测试（my_virtual_npu 算子）
 cd build/Release
 ./onnxruntime_test_all --gtest_filter="*FastGelu*:*SkipLayerNorm*"
 
@@ -2210,9 +2210,9 @@ genhtml coverage.info --output-directory coverage_report
   - `onnxruntime/contrib_ops/cpu/activations.cc` - 激活函数
 
 - **我们的实现位置**（独立目录）:
-  - `onnxruntime/my_cpu/bert/fast_gelu.cc` - FastGELU 实现
-  - `onnxruntime/my_cpu/my_cpu_kernels.cc` - 算子注册
-  - `onnxruntime/test/my_cpu/fast_gelu_op_test.cc` - 单元测试
+  - `onnxruntime/my_virtual_npu/bert/fast_gelu.cc` - FastGELU 实现
+  - `onnxruntime/my_virtual_npu/my_virtual_npu_kernels.cc` - 算子注册
+  - `onnxruntime/test/my_virtual_npu/fast_gelu_op_test.cc` - 单元测试
 
 - **测试参考**:
   - `onnxruntime/test/python/transformers/test_gpt2_*` - GPT-2 测试示例
@@ -2330,8 +2330,8 @@ genhtml coverage.info --output-directory coverage_report
 #### ✅ 已完成的工作
 
 **1. 目录结构和文件** (100% 完成)
-- ✅ `my_cpu/bert/` 目录
-- ✅ `test/my_cpu/` 目录
+- ✅ `my_virtual_npu/bert/` 目录
+- ✅ `test/my_virtual_npu/` 目录
 - ✅ 所有必需的 .h/.cc 文件
 - ✅ CMakeLists.txt 构建配置
 - ✅ 文档和工具脚本
@@ -2345,8 +2345,8 @@ genhtml coverage.info --output-directory coverage_report
 - ✅ 模板实例化（float）
 
 **3. 算子注册系统** (100% 完成)
-- ✅ `my_cpu_kernels.h` - 注册头文件
-- ✅ `my_cpu_kernels.cc` - 注册实现
+- ✅ `my_virtual_npu_kernels.h` - 注册头文件
+- ✅ `my_virtual_npu_kernels.cc` - 注册实现
 - ✅ FastGelu 已注册到 kMSDomain
 
 **4. 单元测试** (100% 完成)
@@ -2358,8 +2358,8 @@ genhtml coverage.info --output-directory coverage_report
 - ✅ 性能测试占位（TODO-OPTIMIZE）
 
 **5. 构建系统** (100% 完成)
-- ✅ `my_cpu/CMakeLists.txt` - 库构建
-- ✅ `test/my_cpu/CMakeLists.txt` - 测试构建
+- ✅ `my_virtual_npu/CMakeLists.txt` - 库构建
+- ✅ `test/my_virtual_npu/CMakeLists.txt` - 测试构建
 - ✅ 编译选项配置（AVX2 已预留）
 - ✅ 依赖链接配置
 
@@ -2379,8 +2379,8 @@ genhtml coverage.info --output-directory coverage_report
 #### ⏭️ 待完成的工作
 
 **1. 集成和编译** (0% 完成)
-- [ ] 修改主 CMakeLists.txt 集成 my_cpu
-- [ ] 编译 ONNX Runtime with my_cpu
+- [ ] 修改主 CMakeLists.txt 集成 my_virtual_npu
+- [ ] 编译 ONNX Runtime with my_virtual_npu
 - [ ] 运行单元测试验证
 - [ ] 修复可能的编译错误
 
@@ -2430,11 +2430,11 @@ genhtml coverage.info --output-directory coverage_report
 1. **验证实现**
    ```bash
    cd d:/open-source/onnxruntime
-   bash my_cpu/verify.sh
+   bash my_virtual_npu/verify.sh
    ```
 
 2. **集成到构建系统**
-   - 参考 `my_cpu/INTEGRATION.md`
+   - 参考 `my_virtual_npu/INTEGRATION.md`
    - 修改主 CMakeLists.txt
    - 编译测试
 

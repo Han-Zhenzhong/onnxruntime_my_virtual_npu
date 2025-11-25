@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-测试 my_cpu 提供者是否能运行 Tiny-GPT2
+测试 my_virtual_npu 提供者是否能运行 Tiny-GPT2
 """
 import onnxruntime as ort
 import numpy as np
 import time
 
-def test_tiny_gpt2_with_my_cpu():
+def test_tiny_gpt2_with_my_virtual_npu():
     try:
-        print("🔍 正在测试 Tiny-GPT2 与 my_cpu 提供者...")
+        print("🔍 正在测试 Tiny-GPT2 与 my_virtual_npu 提供者...")
 
         # 获取所有可用提供者
         available_providers = ort.get_available_providers()
@@ -115,18 +115,18 @@ print("✅ 创建 FastGelu 测试模型成功")
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🚀 测试 my_cpu 提供者运行 Tiny-GPT2")
+    print("🚀 测试 my_virtual_npu 提供者运行 Tiny-GPT2")
     print("=" * 60)
 
     # 主要测试
-    success = test_tiny_gpt2_with_my_cpu()
+    success = test_tiny_gpt2_with_my_virtual_npu()
 
     # 自定义算子测试
     check_custom_ops()
 
     print("\n" + "=" * 60)
     if success:
-        print("🎉 结论: my_cpu 提供者可以运行 Tiny-GPT2!")
+        print("🎉 结论: my_virtual_npu 提供者可以运行 Tiny-GPT2!")
         print("💡 下一步: 优化性能，添加更多自定义算子")
     else:
         print("💥 还需要解决一些问题")

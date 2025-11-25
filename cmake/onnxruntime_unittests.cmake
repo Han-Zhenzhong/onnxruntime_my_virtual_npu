@@ -495,15 +495,15 @@ endif()
 
 list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_cpu_src})
 
-# Add custom my_cpu operator tests
-if(NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_REDUCED_OPS_BUILD)
-  file(GLOB_RECURSE onnxruntime_test_my_cpu_src CONFIGURE_DEPENDS
-    "${TEST_SRC_DIR}/providers/my_cpu/*.cc"
-    "${TEST_SRC_DIR}/providers/my_cpu/*.h"
+# Add custom my_virtual_npu operator tests
+if(onnxruntime_USE_MY_VIRTUAL_NPU AND NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_REDUCED_OPS_BUILD)
+  file(GLOB_RECURSE onnxruntime_test_my_virtual_npu_src CONFIGURE_DEPENDS
+    "${TEST_SRC_DIR}/providers/my_virtual_npu/*.cc"
+    "${TEST_SRC_DIR}/providers/my_virtual_npu/*.h"
     )
-  if(onnxruntime_test_my_cpu_src)
-    list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_my_cpu_src})
-    message(STATUS "my_cpu operator tests enabled")
+  if(onnxruntime_test_my_virtual_npu_src)
+    list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_my_virtual_npu_src})
+    message(STATUS "my_virtual_npu operator tests enabled")
   endif()
 endif()
 

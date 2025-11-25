@@ -6,7 +6,7 @@
 
 ## 项目背景
 
-ONNXRuntime 是微软开源的高性能推理引擎，支持多种硬件后端。本文基于 ONNXRuntime 1.20.0，实现了一个虚拟 NPU 执行提供器（my_cpu provider），用于演示自定义算子的开发流程。
+ONNXRuntime 是微软开源的高性能推理引擎，支持多种硬件后端。本文基于 ONNXRuntime 1.20.0，实现了一个虚拟 NPU 执行提供器（my_virtual_npu provider），用于演示自定义算子的开发流程。
 
 **技术栈：**
 - ONNXRuntime 1.20.0
@@ -22,7 +22,7 @@ ONNXRuntime 是微软开源的高性能推理引擎，支持多种硬件后端�
 为了避免与 ONNXRuntime 内置算子冲突，我们使用自定义域名：
 
 ```cpp
-// onnxruntime/core/providers/my_cpu/my_virtual_npu_defs.h
+// onnxruntime/core/providers/my_virtual_npu/my_virtual_npu_defs.h
 namespace onnxruntime {
 namespace contrib {
 
@@ -40,7 +40,7 @@ void RegisterMyVirtualNpuSchemas();
 Schema 定义了算子的接口规范，包括输入输出、类型约束等：
 
 ```cpp
-// onnxruntime/core/providers/my_cpu/my_virtual_npu_defs.cc
+// onnxruntime/core/providers/my_virtual_npu/my_virtual_npu_defs.cc
 #include <onnx/defs/schema.h>
 #include "onnxruntime/core/graph/constants.h"
 
@@ -100,7 +100,7 @@ Schema 必须在 ONNXRuntime 初始化时注册：
 
 ```cpp
 // onnxruntime/core/session/environment.cc
-#include "core/providers/my_cpu/my_virtual_npu_defs.h"
+#include "core/providers/my_virtual_npu/my_virtual_npu_defs.h"
 
 Status Environment::Create(std::unique_ptr<logging::LoggingManager> logging_manager,
                           std::unique_ptr<Environment>& environment,
@@ -130,7 +130,7 @@ $$
 ### 2.2 内核实现代码
 
 ```cpp
-// onnxruntime/core/providers/my_cpu/nn/fast_gelu.h
+// onnxruntime/core/providers/my_virtual_npu/nn/fast_gelu.h
 #pragma once
 #include "core/common/common.h"
 #include "core/framework/op_kernel.h"
@@ -151,7 +151,7 @@ class FastGelu final : public OpKernel {
 ```
 
 ```cpp
-// onnxruntime/core/providers/my_cpu/nn/fast_gelu.cc
+// onnxruntime/core/providers/my_virtual_npu/nn/fast_gelu.cc
 #include "fast_gelu.h"
 #include "core/providers/cpu/nn/gelu_approximation.h"
 
@@ -187,7 +187,7 @@ template class FastGelu<float>;
 ### 2.3 内核注册
 
 ```cpp
-// onnxruntime/core/providers/my_cpu/my_cpu_kernels.cc
+// onnxruntime/core/providers/my_virtual_npu/my_virtual_npu_kernels.cc
 #include "core/framework/op_kernel.h"
 #include "nn/fast_gelu.h"
 #include "my_virtual_npu_defs.h"
@@ -196,7 +196,7 @@ namespace onnxruntime {
 namespace contrib {
 
 // 定义内核注册宏
-#define REGISTER_MY_CPU_KERNEL_TYPED(name, T, builder) \
+#define REGISTER_MY_VIRTUAL_NPU_KERNEL_TYPED(name, T, builder) \
   ONNX_OPERATOR_TYPED_KERNEL_EX(                        \
       name,                                             \
       kMyCustomDomain,                                  \
@@ -206,9 +206,9 @@ namespace contrib {
       KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<T>()), \
       builder)
 
-void RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
+void RegisterMyVirtualNpuKernels(KernelRegistry& kernel_registry) {
   static const BuildKernelCreateInfoFn function_table[] = {
-      BuildKernelCreateInfo<REGISTER_MY_CPU_KERNEL_TYPED(FastGelu, float, FastGelu<float>)>,
+      BuildKernelCreateInfo<REGISTER_MY_VIRTUAL_NPU_KERNEL_TYPED(FastGelu, float, FastGelu<float>)>,
       // 可以添加更多算子...
   };
 
@@ -225,7 +225,7 @@ void RegisterMyCpuKernels(KernelRegistry& kernel_registry) {
 
 ```cpp
 // onnxruntime/core/providers/cpu/cpu_execution_provider.cc
-#include "core/providers/my_cpu/my_cpu_kernels.h"
+#include "core/providers/my_virtual_npu/my_virtual_npu_kernels.h"
 
 namespace onnxruntime {
 
@@ -233,7 +233,7 @@ CPUExecutionProvider::CPUExecutionProvider(const CPUExecutionProviderInfo& info)
     : IExecutionProvider{onnxruntime::kCpuExecutionProvider, true} {
   // ... 其他初始化代码 ...
 
-  // 注册自定义 my_cpu 算子内核
+  // 注册自定义 my_virtual_npu 算子内核
   contrib::RegisterMyCpuKernels(*registry_);
 }
 
@@ -245,15 +245,15 @@ CPUExecutionProvider::CPUExecutionProvider(const CPUExecutionProviderInfo& info)
 ### 3.1 CMake 配置
 
 ```cmake
-# onnxruntime/core/providers/my_cpu/CMakeLists.txt
-set(my_cpu_sources
+# onnxruntime/core/providers/my_virtual_npu/CMakeLists.txt
+set(my_virtual_npu_sources
   my_virtual_npu_defs.cc
-  my_cpu_kernels.cc
+  my_virtual_npu_kernels.cc
   nn/fast_gelu.cc
 )
 
-add_library(onnxruntime_providers_my_cpu OBJECT ${my_cpu_sources})
-target_include_directories(onnxruntime_providers_my_cpu PRIVATE
+add_library(onnxruntime_providers_my_virtual_npu OBJECT ${my_virtual_npu_sources})
+target_include_directories(onnxruntime_providers_my_virtual_npu PRIVATE
   ${ONNXRUNTIME_ROOT}
   ${ONNXRUNTIME_ROOT}/core
 )
@@ -287,10 +287,10 @@ target_include_directories(onnxruntime_providers_my_cpu PRIVATE
 ONNXRuntime 使用 Google Test 框架，提供了 `OpTester` 工具类简化算子测试：
 
 ```cpp
-// onnxruntime/test/providers/my_cpu/nn/fast_gelu_op_test.cc
+// onnxruntime/test/providers/my_virtual_npu/nn/fast_gelu_op_test.cc
 #include "gtest/gtest.h"
 #include "test/providers/provider_test_utils.h"
-#include "core/providers/my_cpu/my_virtual_npu_defs.h"
+#include "core/providers/my_virtual_npu/my_virtual_npu_defs.h"
 
 namespace onnxruntime {
 namespace test {

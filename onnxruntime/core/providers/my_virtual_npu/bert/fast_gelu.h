@@ -7,7 +7,7 @@
 #include "core/framework/op_kernel.h"
 
 namespace onnxruntime {
-namespace my_cpu {
+namespace my_virtual_npu {
 
 /**
  * FastGELU operator - Basic CPU implementation for float
@@ -38,5 +38,5 @@ class FastGelu final : public OpKernel {
   // void ComputeGeluSSE(const float* input, float* output, size_t count) const;
 };
 
-}  // namespace my_cpu
+}  // namespace my_virtual_npu
 }  // namespace onnxruntime

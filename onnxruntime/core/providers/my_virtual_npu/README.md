@@ -1,57 +1,97 @@
-# My CPU Custom Operators for Tiny-GPT2
+# MyVirtualNPU Execution Provider
 
-This directory contains custom CPU operator implementations for running Tiny-GPT2 model on ONNX Runtime.
+This directory contains a custom execution provider for ONNX Runtime, demonstrating how to create an independent execution provider with custom operators.
 
 ## Overview
 
-This is a standalone implementation independent of `contrib_ops/`, designed for:
-- Learning and experimentation
-- Basic working version first, optimization later
-- Clear documentation with TODO-OPTIMIZE markers for future improvements
+MyVirtualNPU is a **standalone execution provider** designed for:
+- Learning and experimentation with ONNX Runtime architecture
+- Custom operator implementation (currently optimized for Tiny-GPT2)
+- Demonstrating proper EP architecture (independent from CPU provider)
+- **CPU and CUDA dual-mode support** 🚀
+- Performance optimization opportunities
 
-## Directory Structure
+## Architecture
 
 ```
-my_cpu/
+my_virtual_npu/
 ├── bert/
-│   ├── fast_gelu.h          # FastGELU operator header
-│   └── fast_gelu.cc         # FastGELU implementation (basic)
-├── my_cpu_kernels.h         # Kernel registration header
-├── my_cpu_kernels.cc        # Kernel registration implementation
-├── CMakeLists.txt           # Build configuration
-└── README.md                # This file
+│   ├── fast_gelu.h                    # FastGELU operator header (CPU)
+│   └── fast_gelu.cc                   # FastGELU implementation (CPU)
+├── cuda/                              # CUDA implementations ✨
+│   ├── fast_gelu_impl.h               # CUDA kernel interface
+│   ├── fast_gelu_impl.cu              # CUDA kernel implementation
+│   ├── fast_gelu_cuda.h               # CUDA operator header
+│   └── fast_gelu_cuda.cc              # CUDA operator implementation
+├── my_virtual_npu_execution_provider.h # Execution Provider interface
+├── my_virtual_npu_execution_provider.cc # EP implementation (CPU/CUDA)
+├── my_virtual_npu_kernels.h           # Kernel registration header
+├── my_virtual_npu_kernels.cc          # Kernel registration (CPU+CUDA)
+├── CMakeLists.txt                     # Local build config (optional)
+└── README.md                          # This file
 ```
 
 ## Implemented Operators
 
-### 1. FastGelu (✅ Implemented)
+### 1. FastGelu (✅ CPU + CUDA)
 
 Fast GELU activation function using tanh approximation.
 
 **Formula:** `GELU(x) ≈ 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x³)))`
 
-**Current Implementation:**
+**CPU Implementation:**
 - Basic scalar loop (correctness-focused)
 - Support for optional bias input (for BiasGelu fusion)
 - Tolerance: < 1e-3 error compared to reference
 
+**CUDA Implementation:** ✨
+- FP32, FP64, FP16, BFloat16 support
+- Half2 vectorization for FP16 (2x throughput)
+- Optimized grid/block configuration
+- Optional bias support
+
 **Optimization Opportunities (TODO-OPTIMIZE):**
-- `[SIMD]` AVX2 vectorization - Expected 4-8x speedup
-- `[Parallel]` OpenMP parallelization for large tensors
-- `[Cache]` Memory layout optimization
+- `[CPU-SIMD]` AVX2 vectorization - Expected 4-8x speedup
+- `[CPU-Parallel]` OpenMP parallelization for large tensors
+- `[CUDA-Fusion]` Fused Bias+Gelu kernel
+- `[CUDA-Shared]` Shared memory optimization
 
 ## Building
 
-### Integration with ONNX Runtime
+### CPU-only Build
 
-Add to main `CMakeLists.txt`:
+```bash
+cmake ../cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -Donnxruntime_USE_MY_VIRTUAL_NPU=ON \
+  -Donnxruntime_BUILD_SHARED_LIB=ON
+```
 
-```cmake
-# Add custom CPU operators
-add_subdirectory(my_cpu)
+### CPU + CUDA Build 🚀
+
+```bash
+cmake ../cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -Donnxruntime_USE_MY_VIRTUAL_NPU=ON \
+  -Donnxruntime_USE_CUDA=ON \
+  -DCMAKE_CUDA_ARCHITECTURES="75;80;86" \
+  -Donnxruntime_BUILD_SHARED_LIB=ON
+```
+
+**CUDA Architecture Guide:**
+- 75: Turing (RTX 20xx, T4)
+- 80: Ampere (A100, RTX 30xx)
+- 86: Ampere (RTX 30xx mobile)
+- 89: Ada Lovelace (RTX 40xx)
+- 90: Hopper (H100)
+
+### Integration Steps
+
+1. **Configure with CMake option:**
+add_subdirectory(my_virtual_npu)
 
 # Link to main library
-target_link_libraries(onnxruntime PRIVATE onnxruntime_my_cpu)
+target_link_libraries(onnxruntime PRIVATE onnxruntime_my_virtual_npu)
 ```
 
 ### Build Commands
@@ -68,7 +108,7 @@ target_link_libraries(onnxruntime PRIVATE onnxruntime_my_cpu)
 
 ### Unit Tests
 
-Tests are located in `test/my_cpu/`:
+Tests are located in `test/my_virtual_npu/`:
 
 ```bash
 # Run all tests
@@ -109,13 +149,13 @@ outputs = session.run(None, {"input_ids": input_ids})
 
 ```cpp
 #include <onnxruntime/core/session/onnxruntime_cxx_api.h>
-#include "my_cpu/my_cpu_kernels.h"
+#include "my_virtual_npu/my_virtual_npu_kernels.h"
 
 Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "TinyGPT2");
 Ort::SessionOptions session_options;
 
 // Register custom operators
-// (Automatically registered if linked with onnxruntime_my_cpu)
+// (Automatically registered if linked with onnxruntime_my_virtual_npu)
 
 Ort::Session session(env, "tiny_gpt2_optimized.onnx", session_options);
 // Run inference...
@@ -126,9 +166,9 @@ Ort::Session session(env, "tiny_gpt2_optimized.onnx", session_options);
 ### Adding New Operators
 
 1. Create header and implementation files in `bert/` subdirectory
-2. Add to `my_cpu_kernels.cc` registration
+2. Add to `my_virtual_npu_kernels.cc` registration
 3. Update `CMakeLists.txt` to include new sources
-4. Write unit tests in `test/my_cpu/`
+4. Write unit tests in `test/my_virtual_npu/`
 5. Update this README
 
 ### Coding Conventions
@@ -137,7 +177,7 @@ Ort::Session session(env, "tiny_gpt2_optimized.onnx", session_options);
 - **TODO-OPTIMIZE Comments**: Mark all optimization opportunities
   - Format: `// TODO-OPTIMIZE: [Type] Description`
   - Types: `[SIMD]`, `[Parallel]`, `[Cache]`, `[Fusion]`, `[Memory]`
-- **Namespace**: All code in `onnxruntime::my_cpu`
+- **Namespace**: All code in `onnxruntime::my_virtual_npu`
 - **Testing**: Every operator needs comprehensive unit tests
 
 ### Optimization Guide

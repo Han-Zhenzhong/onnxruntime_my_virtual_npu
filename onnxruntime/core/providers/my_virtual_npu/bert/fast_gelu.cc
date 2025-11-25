@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "core/providers/my_cpu/bert/fast_gelu.h"
+#include "core/providers/my_virtual_npu/bert/fast_gelu.h"
 #include "core/providers/cpu/tensor/utils.h"
 #include "core/graph/constants.h"
 #include <cmath>
 
 namespace onnxruntime {
-namespace my_cpu {
+namespace my_virtual_npu {
 
 Status FastGelu::Compute(OpKernelContext* context) const {
   // 1. Get input tensor
@@ -61,9 +61,9 @@ inline float FastGelu::ComputeGeluValue(float x) const {
   return kHalf * x * (1.0f + tanh_val);
 }
 
-}  // namespace my_cpu
+}  // namespace my_virtual_npu
 
-// Register kernel - must be in onnxruntime namespace, not my_cpu
+// Register kernel - must be in onnxruntime namespace, not my_virtual_npu
 // The macro creates template specialization that must be in onnxruntime namespace
 // Use custom domain to avoid conflict with existing FastGelu in contrib_ops
 ONNX_OPERATOR_KERNEL_EX(
@@ -72,6 +72,6 @@ ONNX_OPERATOR_KERNEL_EX(
     1,
     kCpuExecutionProvider,
     KernelDefBuilder().TypeConstraint("T", DataTypeImpl::GetTensorType<float>()),
-    my_cpu::FastGelu);
+    my_virtual_npu::FastGelu);
 
 }  // namespace onnxruntime

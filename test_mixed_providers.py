@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-测试 my_cpu 和 CPU 提供者混合运行 Tiny-GPT2
+测试 my_virtual_npu 和 CPU 提供者混合运行 Tiny-GPT2
 """
 import onnxruntime as ort
 import numpy as np
@@ -74,12 +74,12 @@ def test_provider_combination(self, providers: List[Tuple[str, dict]], name: str
         print("🚀 开始混合提供者测试")
         print("=" * 80)
 
-        # 配置 1: 仅 CPU 提供者（包含 my_cpu 算子集成）
+        # 配置 1: 仅 CPU 提供者（包含 my_virtual_npu 算子集成）
         self.test_provider_combination([
             ('CPUExecutionProvider', {})
-        ], "CPU提供者(含my_cpu算子)")
+        ], "CPU提供者(含my_virtual_npu算子)")
 
-        # 注意：当前 my_cpu 算子已集成到 CPUExecutionProvider 中
+        # 注意：当前 my_virtual_npu 算子已集成到 CPUExecutionProvider 中
         # 所以 MyCpuExecutionProvider 可能不存在
         # 我们主要测试 CPUExecutionProvider 中的混合算子使用
 
@@ -122,19 +122,19 @@ def check_provider_registration():
     available_providers = ort.get_available_providers()
     print(f"可用提供者: {available_providers}")
 
-    # 检查 CPU 提供者（应该包含 my_cpu 算子）
+    # 检查 CPU 提供者（应该包含 my_virtual_npu 算子）
     if 'CPUExecutionProvider' in available_providers:
         print("✅ CPUExecutionProvider 可用")
-        print("💡 my_cpu 算子应该已集成到 CPUExecutionProvider 中")
+        print("💡 my_virtual_npu 算子应该已集成到 CPUExecutionProvider 中")
     else:
         print("❌ CPUExecutionProvider 不可用")
 
-    # 检查是否有独立的 my_cpu 提供者
+    # 检查是否有独立的 my_virtual_npu 提供者
     if 'MyCpuExecutionProvider' in available_providers:
         print("✅ MyCpuExecutionProvider 作为独立提供者存在")
     else:
         print("ℹ️  MyCpuExecutionProvider 未作为独立提供者注册")
-        print("   这是正常的，my_cpu 算子集成到 CPUExecutionProvider 中")
+        print("   这是正常的，my_virtual_npu 算子集成到 CPUExecutionProvider 中")
 
     return available_providers
 
@@ -146,7 +146,7 @@ def create_test_models():
 
         print("\n🛠️  创建混合算子测试模型")
 
-        # 创建包含 my_cpu FastGelu + 标准算子的模型
+        # 创建包含 my_virtual_npu FastGelu + 标准算子的模型
         input_tensor = helper.make_tensor_value_info('input', TensorProto.FLOAT, [1, 4])
         output_tensor = helper.make_tensor_value_info('output', TensorProto.FLOAT, [1, 4])
 
@@ -199,9 +199,9 @@ def test_mixed_ops_model():
     try:
         print("\n🧪 测试混合算子模型")
 
-        # 只测试 CPU 提供者（包含 my_cpu 算子）
+        # 只测试 CPU 提供者（包含 my_virtual_npu 算子）
         configurations = [
-            ([('CPUExecutionProvider', {})], "CPU(含my_cpu算子)"),
+            ([('CPUExecutionProvider', {})], "CPU(含my_virtual_npu算子)"),
         ]
 
         for providers, name in configurations:
@@ -242,8 +242,8 @@ if __name__ == "__main__":
         print(f"\n🎉 结论:")
         if successful_configs:
             print(f"✅ 混合提供者可以成功运行 Tiny-GPT2!")
-            print(f"💡 推荐配置: my_cpu + CPU 混合使用")
-            print(f"🔧 算子分配: 自定义算子用 my_cpu，标准算子用 CPU")
+            print(f"💡 推荐配置: my_virtual_npu + CPU 混合使用")
+            print(f"🔧 算子分配: 自定义算子用 my_virtual_npu，标准算子用 CPU")
         else:
             print(f"❌ 需要解决提供者注册问题")
 

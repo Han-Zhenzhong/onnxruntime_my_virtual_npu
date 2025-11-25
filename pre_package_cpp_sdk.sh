@@ -54,9 +54,9 @@ cp -r include/onnxruntime/core/common "$RELEASE_DIR/include/onnxruntime/core/" 2
 cp -r include/onnxruntime/core/graph "$RELEASE_DIR/include/onnxruntime/core/" 2>/dev/null || true
 
 # 自定义算子头文件（如果需要用户实现自定义算子）
-mkdir -p "$RELEASE_DIR/include/onnxruntime/core/providers/my_cpu"
-if [ -d "onnxruntime/core/providers/my_cpu" ]; then
-    find onnxruntime/core/providers/my_cpu -name "*.h" -exec cp --parents {} "$RELEASE_DIR/include/" \;
+mkdir -p "$RELEASE_DIR/include/onnxruntime/core/providers/my_virtual_npu"
+if [ -d "onnxruntime/core/providers/my_virtual_npu" ]; then
+    find onnxruntime/core/providers/my_virtual_npu -name "*.h" -exec cp --parents {} "$RELEASE_DIR/include/" \;
 fi
 
 echo "✅ 头文件复制完成"
@@ -252,7 +252,7 @@ make
 
 ## 自定义算子
 
-本版本包含自定义 my_cpu 算子，支持：
+本版本包含自定义 my_virtual_npu 算子，支持：
 - FastGelu (domain: com.my_virtual_npu)
 
 使用方式与标准算子相同，ONNXRuntime 会自动选择正确的实现。

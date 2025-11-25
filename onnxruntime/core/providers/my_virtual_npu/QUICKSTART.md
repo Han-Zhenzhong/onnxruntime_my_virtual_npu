@@ -4,12 +4,12 @@
 
 ### Core Implementation
 ```
-my_cpu/
+my_virtual_npu/
 ├── bert/
 │   ├── fast_gelu.h              # FastGELU operator header
 │   └── fast_gelu.cc             # FastGELU implementation (328 lines)
-├── my_cpu_kernels.h             # Kernel registration header
-├── my_cpu_kernels.cc            # Kernel registration (43 lines)
+├── my_virtual_npu_kernels.h             # Kernel registration header
+├── my_virtual_npu_kernels.cc            # Kernel registration (43 lines)
 ├── CMakeLists.txt               # Build configuration (59 lines)
 ├── README.md                    # Documentation (220 lines)
 ├── INTEGRATION.md               # Integration guide (350 lines)
@@ -20,7 +20,7 @@ my_cpu/
 
 ### Tests
 ```
-test/my_cpu/
+test/my_virtual_npu/
 ├── fast_gelu_op_test.cc         # Unit tests (150 lines)
 └── CMakeLists.txt               # Test build configuration
 ```
@@ -57,25 +57,25 @@ test/my_cpu/
 ### 1. Verify Installation
 ```bash
 cd d:/open-source/onnxruntime
-bash my_cpu/verify.sh      # Linux/Mac
+bash my_virtual_npu/verify.sh      # Linux/Mac
 # or
-my_cpu\verify.bat          # Windows
+my_virtual_npu\verify.bat          # Windows
 ```
 
 ### 2. Generate Test Data (Optional)
 ```bash
-cd my_cpu
+cd my_virtual_npu
 python generate_test_data.py
 ```
 
 ### 3. Integrate with Build
-See `my_cpu/INTEGRATION.md` for detailed steps.
+See `my_virtual_npu/INTEGRATION.md` for detailed steps.
 
 Quick integration:
 ```cmake
 # Add to onnxruntime/CMakeLists.txt
-add_subdirectory(my_cpu)
-target_link_libraries(onnxruntime PRIVATE onnxruntime_my_cpu)
+add_subdirectory(my_virtual_npu)
+target_link_libraries(onnxruntime PRIVATE onnxruntime_my_virtual_npu)
 ```
 
 ### 4. Build
@@ -100,7 +100,7 @@ cd build/Release
 ## 🎨 Key Features
 
 ### 1. Clean Architecture
-- ✅ Independent namespace (`onnxruntime::my_cpu`)
+- ✅ Independent namespace (`onnxruntime::my_virtual_npu`)
 - ✅ No dependencies on contrib_ops
 - ✅ Modular design (easy to add operators)
 
@@ -178,20 +178,20 @@ GELU(x) ≈ 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x³)))
 
 ### Build Issues
 - **Include path**: Add `${ONNXRUNTIME_ROOT}` to include directories
-- **Link error**: Ensure `onnxruntime_my_cpu` is linked
+- **Link error**: Ensure `onnxruntime_my_virtual_npu` is linked
 
 ### Runtime Issues
 - **Operator not found**: Check operator is registered with correct domain (kMSDomain)
 - **Wrong output**: Verify test data generation and constants
 
 ### Integration Issues
-- See `my_cpu/INTEGRATION.md` troubleshooting section
+- See `my_virtual_npu/INTEGRATION.md` troubleshooting section
 
 ## 📞 Support
 
 For issues or questions:
-1. Check `my_cpu/README.md`
-2. Check `my_cpu/INTEGRATION.md`
+1. Check `my_virtual_npu/README.md`
+2. Check `my_virtual_npu/INTEGRATION.md`
 3. Review implementation plan: `docs/my_operators/operator_implementation_plan.md`
 4. Check code comments for TODO-OPTIMIZE hints
 
